@@ -1,6 +1,7 @@
 dfrsync
 
-Web App for rsync replication, scheduled or on-demand.
+Web App for rsync file replication, scheduled or on-demand.
+
 
 
 
@@ -12,7 +13,7 @@ Web App for rsync replication, scheduled or on-demand.
 
 ROADMAP:
 
-planned functions/views: 
+planned features: 
 
  - [x] list of replications
  - [x] add replication
@@ -36,7 +37,10 @@ planned functions/views:
  - [x] run scheduler
  - [x] for schedule - show recent runs
  - [ ] auto-cancell replication task if there is more than N tasks of this type already running
- 
+ - [ ] show app log
+ - [ ] task runner - show when started and when finished, how long took
+ - [ ] redesign page header
+
  
 
 

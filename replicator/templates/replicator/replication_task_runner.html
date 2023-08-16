@@ -10,9 +10,9 @@ Tasks:<br>
 <br>
 <br>
 
-Running tasks:<br>
+Recent tasks:<br>
 {% for replication_task in running_tasks %}
-<a href="{% url 'replicator:replication_task_detail' replication_task.id %}">{{ replication_task }}</a> ({{ replication_task.state }}) <br>
+<a href="{% url 'replicator:replication_task_detail' replication_task.id %}">{{ replication_task }}</a>{% if replication_task.schedule != None %} ({{ replication_task.schedule }}, scheduled: {{ replication_task.schedule.hr_schedule }}) {% endif %} ({{ replication_task.state }}) <br>
 {% endfor %}
 
 

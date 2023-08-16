@@ -91,12 +91,12 @@ class Replication(models.Model):
 class ReplicationSchedule(models.Model):
 	"""one row of Replication schedule
 	
-	will be supported:
+	will be supported schedules like:
 	every hour at MM:SS
 	everyday at HH:MM:SS
 	every monday at HH:MM:SS
 	every 10th day of month
-	at YYYY-MM-DD HH:MM:SS
+	at YYYY-MM-DD HH:MM:SS (one time in future)
 	"""
 	
 	name = models.CharField(max_length = 128, unique = True, blank = True, null = True)
@@ -109,7 +109,6 @@ class ReplicationSchedule(models.Model):
 	year = models.IntegerField(default = None, blank = True, null = True)
 	dow = models.IntegerField(default = None, blank = True, null = True)
 	enabled = models.BooleanField(default = True)
-	pass
 	
 	
 	def get_absolute_url(self):
@@ -153,16 +152,19 @@ class ReplicationSchedule(models.Model):
 	
 	@property
 	def hr_schedule(self):
+		import calendar
+		calendar.setfirstweekday(calendar.SUNDAY)
+		seconds = "00" if self.second is None else f"{self.second:02}"
 		if self.is_hourly:
-			return f"hourly, at "
+			return f"hourly, at {self.minute:02}:{seconds}"
 		elif self.is_daily:
-			return f"dayly, at "
-		elif self.is_weekly:
-			return f"weekly, at "
+			return f"daily, at {self.hour:02}:{self.minute:02}:{seconds}"
+		elif self.is_weekly: # TODO: dow
+			return f"weekly, at {calendar.day_name[self.dow]}, {self.hour:02}:{self.minute:02}:{seconds}"
 		elif self.is_monthly:
-			return f"monthly, at "
+			return f"monthly, at {self.dom} at {self.hour:02}:{self.minute:02}:{seconds}"
 		elif self.is_one_time_in_future:
-			return f"one time in future, at"
+			return f"one time in future, at {self.year}-{self.month}-{self.dom} {self.hour:02}:{self.minute:02}:{seconds}"
 		else:
 			return "UNKNOWN"
 	
@@ -172,7 +174,6 @@ class ReplicationSchedule(models.Model):
 		related_tasks = ReplicationTask.objects.all().filter(schedule = self)
 		logger.debug(f"related_tasks: loaded {len(related_tasks)} related tasks")
 		return related_tasks
-		pass
 	
 	
 	def load_schedule_object(self):

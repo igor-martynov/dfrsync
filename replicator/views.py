@@ -131,8 +131,8 @@ class ReplicationScheduleEditView(generic.edit.UpdateView):
 
 class ReplicationScheduleDeleteView(generic.edit.DeleteView):
 	model = ReplicationSchedule
-	# success_url = reverse("replicator:scheduler")
-
+	
+	
 	def get_success_url(self):
 		return reverse("replicator:scheduler")
 	
