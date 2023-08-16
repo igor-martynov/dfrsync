@@ -1,0 +1,18 @@
+{% include "replicator/header.html" %}
+
+
+Replication task runner <br><br>
+
+Tasks:<br>
+{% for replication in all_replications %}
+{{ replication.name }} - {{ replication.src }} --> {{ replication.dest }} <a href="{% url 'replicator:run_replication_task' replication.id %}">run</a> <br>
+{% endfor %}
+<br>
+<br>
+
+Running tasks:<br>
+{% for replication_task in running_tasks %}
+<a href="{% url 'replicator:replication_task_detail' replication_task.id %}">{{ replication_task }}</a> ({{ replication_task.state }}) <br>
+{% endfor %}
+
+

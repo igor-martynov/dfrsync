@@ -1,0 +1,11 @@
+{% include "replicator/header.html" %}
+
+<form method="POST">
+	{% csrf_token %}
+	
+	{{ message }}<br>
+	<br>
+	<input type="submit" name="OK" value="OK">
+</form>
+
+

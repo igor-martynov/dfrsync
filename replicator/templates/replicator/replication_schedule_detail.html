@@ -1,0 +1,18 @@
+{% include "replicator/header.html" %}
+<!-- detail, not form -->
+<h1>Replication schedule {{ object.pk }} info:</h1>
+<p>Name: {{ object.name }}</p>
+<p>Run schedule: {{ object.hr_schedule }}</p>
+<p>Hour: {{ object.hour }}</p>
+<p>Minute: {{ object.minute }}</p>
+<p>Second: {{ object.second }}</p>
+<p>Day of month: {{ object.dom }}</p>
+<p>Month: {{ object.month }}</p>
+<p>Year: {{ object.year }}</p>
+<p>Day of week: {{ object.dow }}</p>
+<p>Enabled: {{ object.enabled }}</p>
+<br>
+<br>
+Launched: <br>
+
+

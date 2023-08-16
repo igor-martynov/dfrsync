@@ -1,0 +1,11 @@
+{% include "replicator/header.html" %}
+
+All replications:<br><br>
+{% for replication in object_list %}
+<a href="{% url 'replicator:replication_detail' replication.id %}">{{ replication.name }}</a> [<a href="{% url 'replicator:delete_replication' replication.id %}">delete</a>]<br>
+{% endfor %}<br>
+<br>
+<a href="{% url 'replicator:add_replication' %}">add new</a> <br>
+<a href="{% url 'replicator:replication_task_runner' %}">task runner</a> <br>
+<a href="{% url 'replicator:scheduler' %}">scheduler</a> <br>
+(c) phx<br>

@@ -1,0 +1,23 @@
+{% include "replicator/header.html" %}
+
+<h1>Replication task {{ object.pk }}</h1>
+
+<p>Replication name: {{ object.replication.name }}</p>
+<p>Replication schedule: {{ object.schedule.name }}</p>
+<!-- <p>Replication schedule: {{ object.schedule.name }}</p> -->
+<p>SRC: {{ object.replication.src }}</p>
+<p>DEST: {{ object.replication.dest }}</p>
+<p>Start: {{ object.start }}</p>
+<p>End: {{ object.end }}</p>
+<p>Running: {{ object.running }}</p>
+<p>Dry_run: {{ object.dry_run }}</p>
+<p>Error: {{ object.error }}</p>
+<p>Warning: {{ object.warning }}</p>
+<p>OK: {{ object.OK }}</p>
+<p>Complete: {{ object.complete }}</p>
+<p>State: {{ object.state }}</p>
+<!-- <p></p> -->
+<p>cmd output: {{ object.cmd_output_text }}</p>
+<p>error text: {{ object.error_text }}</p>
+<br>
+
