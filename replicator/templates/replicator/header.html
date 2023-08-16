@@ -1,5 +1,11 @@
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'replicator/style.css' %}">
 
-[ <a href="{% url 'replicator:index' %}" title="main page">DFRsync</a> ] [ <a href="{% url 'replicator:replication_task_runner' %}" title="show task manager and running task">task runner</a> ] [ <a href="{% url 'replicator:scheduler' %}" title="show scheduler and schedules">scheduler</a> ] [ <a href="{% url 'replicator:add_replication' %}" title="add new replication">add replication</a> ]
+[ <a href="{% url 'replicator:index' %}" title="main page">DFRsync</a> ]
+<span style="display: inline-block; width: 1ch;"> </span>
+[ <a href="{% url 'replicator:replication_task_runner' %}" title="show task manager and running task">task runner</a> ]
+<span style="display: inline-block; width: 1ch;"> </span>
+[ <a href="{% url 'replicator:scheduler' %}" title="show scheduler and schedules">scheduler</a> ]
+<span style="display: inline-block; width: 1ch;"> </span>
+[ <a href="{% url 'replicator:add_replication' %}" title="add new replication">add replication</a> ]
 <br><br>

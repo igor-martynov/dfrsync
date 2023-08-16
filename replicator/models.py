@@ -88,19 +88,15 @@ class Replication(models.Model):
 
 
 
-
-
-
 class ReplicationSchedule(models.Model):
 	"""one row of Replication schedule
 	
-	should be supported:
-	everyday at hh:mm:ss
-	every monday at hh:mm:ss
+	will be supported:
+	every hour at MM:SS
+	everyday at HH:MM:SS
+	every monday at HH:MM:SS
 	every 10th day of month
-	
-	
-	
+	at YYYY-MM-DD HH:MM:SS
 	"""
 	
 	name = models.CharField(max_length = 128, unique = True, blank = True, null = True)

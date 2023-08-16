@@ -13,6 +13,7 @@
 <p>Enabled: {{ object.enabled }}</p>
 <br>
 <br>
-Launched: <br>
-
-
+Launched by this schedule tasks: <br>
+{% for task in object.related_tasks %}
+	task {{ task }}: <span style="display: inline-block; width: 1ch;"> </span> {{ task.state }}, <span style="display: inline-block; width: 1ch;"> </span> {{ task.start }} - {{ task.end }} <span style="display: inline-block; width: 1ch;"> </span> {% if task.dry_run%} dry run {% endif %} [ <a href="{% url 'replicator:replication_task_detail' task.id %}" title="show this task">show</a> ]<br>
+{% endfor %}

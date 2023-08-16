@@ -2,13 +2,14 @@
 
 <h1>Scheduler</h1>
 
+<p>Schedules:</p>
 {% for schedule in schedules %}
-<a href="{% url 'replicator:edit_schedule' schedule.id %}">{{ schedule.name }}</a>
+<a href="{% url 'replicator:edit_schedule' schedule.id %}">{{ schedule.name }}</a> <span style="display: inline-block; width: 1ch;"> </span> - ({{ schedule.hr_schedule }})
 [ <a href="{% url 'replicator:schedule_detail' schedule.id %}">show</a> ]
 {% if schedule.enabled %}
- enabled [<a href="{% url 'replicator:disable_schedule' schedule.id %}">disable</a>] 
+ <span style="color: green;">enabled</span> [<a href="{% url 'replicator:disable_schedule' schedule.id %}">disable</a>] 
 {% else %}
- disabled [<a href="{% url 'replicator:enable_schedule' schedule.id %}">enable</a>]
+ <span style="color: red;">disabled</span> [<a href="{% url 'replicator:enable_schedule' schedule.id %}">enable</a>]
 {% endif %} 
 [<a href="{% url 'replicator:delete_schedule' schedule.id %}">delete</a>]<br>
 {% endfor %}
