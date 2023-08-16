@@ -40,8 +40,9 @@ planned features:
  - [ ] show app log
  - [ ] task runner - show when started and when finished, how long took
  - [ ] redesign page header
+ - [ ] post-replication and pre-replication command
+ - [ ] ensure size of command output log is suffucient
 
- 
 
 
 
