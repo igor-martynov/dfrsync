@@ -37,8 +37,6 @@ class Replication(models.Model):
 	
 	def get_absolute_url(self):
 		rev_tmp = reverse("replicator:replication_detail", args = (self.id,))
-		# logger.debug(f"get_absolute_url: will_return: {rev_tmp}")
-		# return reverse("replicator:replication_detail", args = (self.object.id,))
 		return rev_tmp
 	
 	
@@ -153,20 +151,24 @@ class ReplicationSchedule(models.Model):
 	@property
 	def hr_schedule(self):
 		import calendar
-		calendar.setfirstweekday(calendar.SUNDAY)
+		calendar.setfirstweekday(calendar.MONDAY)
 		seconds = "00" if self.second is None else f"{self.second:02}"
-		if self.is_hourly:
-			return f"hourly, at {self.minute:02}:{seconds}"
-		elif self.is_daily:
-			return f"daily, at {self.hour:02}:{self.minute:02}:{seconds}"
-		elif self.is_weekly: # TODO: dow
-			return f"weekly, at {calendar.day_name[self.dow]}, {self.hour:02}:{self.minute:02}:{seconds}"
-		elif self.is_monthly:
-			return f"monthly, at {self.dom} at {self.hour:02}:{self.minute:02}:{seconds}"
-		elif self.is_one_time_in_future:
-			return f"one time in future, at {self.year}-{self.month}-{self.dom} {self.hour:02}:{self.minute:02}:{seconds}"
-		else:
-			return "UNKNOWN"
+		try:
+			if self.is_hourly:
+				return f"hourly, at {self.minute:02}:{seconds}"
+			elif self.is_daily:
+				return f"daily, at {self.hour:02}:{self.minute:02}:{seconds}"
+			elif self.is_weekly: # TODO: dow
+				return f"weekly, at {calendar.day_name[self.dow]}, {self.hour:02}:{self.minute:02}:{seconds}"
+			elif self.is_monthly:
+				return f"monthly, at {self.dom} at {self.hour:02}:{self.minute:02}:{seconds}"
+			elif self.is_one_time_in_future:
+				return f"one time in future, at {self.year}-{self.month}-{self.dom} {self.hour:02}:{self.minute:02}:{seconds}"
+			else:
+				return "UNKNOWN"
+		except Exception as e:
+			logger.error(f"hr_schedule: got error {e}, traceback: {traceback.format_exc()}")
+			return "UNKNOWN/INVALID"
 	
 	
 	@property
@@ -199,23 +201,25 @@ class ReplicationSchedule(models.Model):
 				date_str = f"{self.hour:02}:{self.minute:02}:{self.second:02}"
 			match self.dow:
 				case 0:
-					self.job = schedule.every().sunday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
-				case 7:
-					self.job = schedule.every().sunday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
-				case 1:
 					self.job = schedule.every().monday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
-				case 2:
+				case 1:
 					self.job = schedule.every().tuesday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
-				case 3:
+				case 2:
 					self.job = schedule.every().wednesday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
-				case 4:
+				case 3:
 					self.job = schedule.every().thursday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
-				case 5:
+				case 4:
 					self.job = schedule.every().friday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
-				case 6:
+				case 5:
 					self.job = schedule.every().saturday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
-					
+				case 6:
+					self.job = schedule.every().sunday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+		elif self.is_monthly:
+			reaise NotImplemented
+			# monthly does not work
+			# self.job = schedule.every().month.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 			
+			pass
 		
 		else:
 			logger.error(f"load_schedule_object: unsupported schedule type, please check")

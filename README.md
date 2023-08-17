@@ -42,9 +42,14 @@ planned features:
  - [ ] redesign page header
  - [ ] post-replication and pre-replication command
  - [ ] ensure size of command output log is suffucient
+ - [ ] check/validate replication src and dest
+ - [ ] check/validate replication options
 
 
 
 
+SECURITY:
+
+Please remember to change SECRET_KEY and DEBUG in settings.py at least.
 
 
