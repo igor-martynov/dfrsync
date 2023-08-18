@@ -18,10 +18,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-
+from django.views.generic import RedirectView
 
 urlpatterns = [
-    # TODO: add redirect from / to replicator/ here
+    path("", RedirectView.as_view(url= "replicator/")),
     path("replicator/", include("replicator.urls")),
     path('admin/', admin.site.urls),
     

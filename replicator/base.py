@@ -40,7 +40,6 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 	TASK_START_DELAY = 0.5
 	LOOP_DELAY = 1.0
 	LOOP_DELAY_ON_BLOCKER = 0.1
-	
 	thread = None
 	
 	
@@ -51,8 +50,6 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 	@staticmethod
 	def create_new_replication_task(replication, schedule = None):
 		new_task = ReplicationTask.objects.create(replication = replication, dry_run = replication.dry_run, schedule = schedule)
-		# new_task.dry_run = replication.dry_run
-		# new_task.schedule = schedule
 		logger.info(f"create_new_replication_task: created new task {new_task}")
 		return new_task
 	
@@ -65,27 +62,12 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 		return new_task
 	
 	
-	# @classmethod
-	# def get_job_for_replication(cls, replication):
-	# 	try:
-	# 		def f():
-	# 			logger.debug(f"f: will run cls.add_task_for_replication(replication)")
-	# 			return cls.add_task_for_replication(replication)
-	# 		logger.debug(f"get_job_for_replication: will return function {f}")
-	# 		return f
-	# 	except Exception as e:
-	# 		logger.error(f"get_job_for_replication: got error {e}, traceback: {traceback.format_exc()}")
-	
-	
-	
 	@classmethod
 	def get_job_for_schedule(cls, schedule):
 		try:
 			logger.debug(f"get_job_for_schedule: will return job for schedule {schedule}")
 			def f():
-				# logger.debug(f"f: will run cls.add_task_for_replication(replication)")
 				return cls.add_task_for_replication(schedule.replication, schedule = schedule)
-			# logger.debug(f"get_job_for_replication: will return function {f}")
 			return f
 		except Exception as e:
 			logger.error(f"get_job_for_schedule: got error {e}, traceback: {traceback.format_exc()}")
@@ -196,14 +178,7 @@ class ReplicationScheduler(object, metaclass = MetaSingleton):
 	thread = None
 	schedule = None
 	LOOP_DELAY = 1.0
-	pass
 	
-	
-	
-	# @classmethod
-	# def add_schedule(cls, schedule):
-	# 	pass
-
 
 	@classmethod
 	def _run_loop(cls):
@@ -251,16 +226,6 @@ class ReplicationScheduler(object, metaclass = MetaSingleton):
 		logger.debug(f"reload_all_schedules: starting ReplicationScheduler")
 		cls.clear_all_schedules()
 		cls.load_all_schedules()
-	
-
-	# TODO: unused	
-	# def delete_schedule(cls, schedule):
-	# 	pass
-	
-	
-	# def edit_schedule(cls, schedule):
-	# 	pass
-	
 	
 	
 	

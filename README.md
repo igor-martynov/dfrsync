@@ -13,7 +13,11 @@ Web App for rsync file replication, scheduled or on-demand.
 
 ROADMAP:
 
+
+
 planned features: 
+
+
 
  - [x] list of replications
  - [x] add replication
@@ -24,7 +28,7 @@ planned features:
  - [x] show replication task result
  - [x] hourly schedule
  - [x] dayly scedule
- - [ ] weekly schedule
+ - [x] weekly schedule
  - [ ] monthly schedule
  - [ ] schedule one time in future (year + month + dom + time)
  - [x] list of schedules
@@ -41,15 +45,23 @@ planned features:
  - [ ] task runner - show when started and when finished, how long took
  - [ ] redesign page header
  - [ ] post-replication and pre-replication command
- - [ ] ensure size of command output log is suffucient
+ - [x] ensure size of command output log is suffucient
  - [ ] check/validate replication src and dest
  - [ ] check/validate replication options
+ - [ ] redesign list of replications
+ - [ ] fix non-zero return code of rsync command not threated as error
+
 
 
 
 
 SECURITY:
 
+
+
+This app works in DEBUG mode of django. Use at own risk.
 Please remember to change SECRET_KEY and DEBUG in settings.py at least.
+
+
 
 

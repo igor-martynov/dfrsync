@@ -2,7 +2,14 @@
 from django import forms
 
 from .models import Replication, ReplicationSchedule
-# forms here
+
+
+class ReplicationForm(forms.ModelForm):
+	
+	class Meta:
+		model = Replication
+		fields = "__all__"
+
 
 
 class ReplicationScheduleForm(forms.ModelForm):

@@ -8,11 +8,10 @@ import logging
 
 from .models import Replication, ReplicationSchedule, ReplicationTask
 from .base import ReplicationTaskRunner
-from .forms import ReplicationScheduleForm
+from .forms import ReplicationForm, ReplicationScheduleForm
 
 
 logger = logging.getLogger(__name__)
-
 
 
 
@@ -28,7 +27,8 @@ class IndexView(generic.ListView):
 class ReplicationDetailView(generic.edit.UpdateView):
 	model = Replication
 	template_name = "replicator/replication_detail.html"
-	fields = ["name", "src", "dest", "options", "dry_run", "enabled"]
+	# fields = ["name", "src", "dest", "options", "dry_run", "enabled"]
+	form_class = ReplicationForm
 	
 	
 	def get_success_url(self):
@@ -38,9 +38,9 @@ class ReplicationDetailView(generic.edit.UpdateView):
 	
 class ReplicationAddView(generic.edit.CreateView):
 	model = Replication
-	fields = ["name", "src", "dest", "dry_run", "enabled"]
-	template_name = "replicator/replication_detail.html"
-
+	# fields = ["name", "src", "dest", "dry_run", "enabled"]
+	template_name = "replicator/replication_add.html"
+	form_class = ReplicationForm
 
 	def get_success_url(self):
 		return reverse("replicator:index")

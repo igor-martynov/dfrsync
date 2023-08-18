@@ -9,9 +9,8 @@ import threading
 
 logger = logging.getLogger(__name__)
 
-from .base_functions import run_command
+from .base_functions import run_command, run_command_with_returncode
 
-# Create your models here.
 
 
 class Replication(models.Model):
@@ -28,7 +27,6 @@ class Replication(models.Model):
 	pre_cmd = models.CharField(max_length = 512, default = None, blank = True, null = True)
 	post_cmd = models.CharField(max_length = 512, default = None, blank = True, null = True)
 	RSYNC_BIN = "rsync"
-	pass
 
 
 	def __str__(self):
@@ -38,47 +36,36 @@ class Replication(models.Model):
 	def get_absolute_url(self):
 		rev_tmp = reverse("replicator:replication_detail", args = (self.id,))
 		return rev_tmp
-	
-	
-	def parse_src_dest(self):
-		"""here we parse source and dest"""
-		src_is_local = self.src.startswith("/")
-		dest_is_local = self.dest.startswith("/")
-		if src_is_local and not dest_is_local:
-			self._type = "local_to_remote"
-		elif src_is_local and dest_is_local:
-			self._type = "local_to_local"
-		elif not src_is_local and dest_is_local:
-			self._type = "remote_to_local"
-		elif not src_is_local and not dest_is_local:
-			# self._logger.error("parse_src_dest: remote to remote replication is not supported!")
-			print("remote to remote replication is not supported!")
-			sys.exit(1)
-		
-		# set remote_host 
-		
-		pass
 		
 	
-	def check_connection_via_ICMP(self):
-		def ping_f():
-			return ping3.ping(self.remote_host)
-		retries_left = self.retries
-		ping = ping_f()
-		while ping is None and retries_left > 0:
-			# self._logger.info(f"check_connection: host {self.remote_host} unreachable by ICMP, retrying ({retries_left} left)...")
-			time.sleep(self.RETRY_DELAY_S)
-			ping = ping_f()
-			retries_left -= 1
-		if ping is not None:
-			# OK host is reachable
-			# self._logger.info(f"check_connection: host {self.remote_host} is reachable, retries left: {retries_left}")
-			return True
-		if ping is None:
-			if retries_left == 0:
-				# self._logger.error(f"check_connection: host {self.remote_host} unreachable and no retries left.")
-				return False
+	@property
+	def src_is_local(self):
+		return self.src.startswith("/")
 	
+	
+	@property
+	def dest_is_local(self):
+		return self.dest.startswith("/")
+	
+	
+	@property
+	def remote_host(self):
+		if self.src_is_local and self.dest_is_local:
+			return None
+		if not self.src_is_local and not self.dest_is_local:
+			logger.error(f"remote_host: unsupported configuration of replication: both are remote")
+			raise NotImplemented
+		if self.src_is_local and not self.dest_is_local:
+			remote_part = self.dest
+		if self.dest_is_local and not self.src_is_local:
+			remote_part = self.src
+		if "@" in remote_part:
+			remote_host = remote_part.split(":")[0].split("@")[1]
+		else:
+			remote_host = remote_part.split(":")[0]
+		logger.debug(f"remote_host: will return remote host {remote_host}")
+		return remote_host
+		
 	
 	@property
 	def resulting_cmd(self):
@@ -215,7 +202,7 @@ class ReplicationSchedule(models.Model):
 				case 6:
 					self.job = schedule.every().sunday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 		elif self.is_monthly:
-			reaise NotImplemented
+			raise NotImplemented
 			# monthly does not work
 			# self.job = schedule.every().month.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 			
@@ -250,8 +237,8 @@ class ReplicationTask(models.Model):
 	cancelled = models.BooleanField(default = False)
 	error_text = models.TextField(blank = True, null = True)
 	cmd_output_text = models.TextField(blank = True, null = True)
-	
-	pass
+
+	RETRY_DELAY_S = 5.0
 	
 	
 	def _set_thread(self, _thread):
@@ -268,17 +255,53 @@ class ReplicationTask(models.Model):
 	def __str__(self):
 		return f"ReplicationTask {self.id} for replica {self.replication}"
 		
-		
+	
+	# TODO: under testing and rewrite
+	def check_connection_via_ICMP(self):
+		"""check connection via ICMP.
+		returns True if reachable, False if unreachable, None if there is no remote_host to connect (both src and dest are local
+		)"""
+		import time
+		import ping3
+		def ping_f():
+			ping_res = ping3.ping(self.replication.remote_host)
+			logger.debug(f"check_connection_via_ICMP: ping_f: ping_res is {ping_res}")
+			return ping_res
+		if self.replication.remote_host is None:
+			logger.info(f"check_connection_via_ICMP: skipping connection because both src {self.replication.src} and dest {self.replication.dest} are local.")
+			return None
+		logger.debug(f"check_connection_via_ICMP: will check connection to {self.replication.remote_host}")
+		retries_left = self.replication.retries
+		ping = ping_f()
+		while (ping is False or ping is None) and retries_left > 0:
+			logger.info(f"check_connection_via_ICMP: host {self.replication.remote_host} unreachable by ICMP, retrying ({retries_left} left)...")
+			time.sleep(self.RETRY_DELAY_S)
+			ping = ping_f()
+			retries_left -= 1
+		if ping is not False and ping is not None:
+			# OK host is reachable
+			logger.info(f"check_connection_via_ICMP: host {self.replication.remote_host} is reachable, retries left: {retries_left}")
+			return True
+		if ping is False or ping is None:
+			if retries_left == 0:
+				logger.error(f"check_connection_via_ICMP: host {self.replication.remote_host} unreachable and no retries left.")
+				return False
+		if ping is True:
+			return True
+	
+	
 	def mark_start(self):
 		self.start = timezone.now()
 		self.running = True
+		self.save()
 	
 	
 	def mark_end(self):
 		self.end = timezone.now()
 		self.running = False
 		self.complete = True
-	
+		self.save()
+		
 	
 	def check_src(self):
 		pass
@@ -292,6 +315,13 @@ class ReplicationTask(models.Model):
 		pass
 	
 	
+	def returncode_is_ok(self, returncode):
+		if returncode == 0:
+			return True
+		else:
+			return False
+	
+	
 	def run_replication(self):
 		logger.debug(f"run_replication: starting task for replication {self.replication}")
 		rsync_cmd = self.replication.resulting_cmd
@@ -299,14 +329,20 @@ class ReplicationTask(models.Model):
 		if not self.dry_run:
 			try:
 				logger.debug(f"run_replication: will run cmd: {rsync_cmd}")
-				self.cmd_output_text = run_command(rsync_cmd)
-				self.OK = True
-				logger.debug(f"run_replication: replication complete - cmd executed")
+				self.cmd_output_text, returncode = run_command_with_returncode(rsync_cmd)
+				logger.debug(f"run_replication: cmd executed. returncode is {returncode}")
+				if self.returncode_is_ok(returncode):
+					self.OK = True
+					logger.info(f"run_replication: replication is complete, OK")
+				else:
+					self.OK = False
+					self.error = True
+					self.add_error_text(f"Got non-zero returncode {returncode}" + "\n")
+					logger.info(f"run_replication: replication is complete, NOT OK")
 			except Exception as e:
 				self.error = True
 				self.error_text = str(e)
 				logger.error(f"run_replication: got error {e}, traceback: {traceback.format_exc()}")
-			self.complete = True
 			self.mark_end()
 			self.save()
 		else:
@@ -316,7 +352,7 @@ class ReplicationTask(models.Model):
 	
 	
 	def launch(self):
-		self._set_thread(threading.Thread(target = self.run_replication))
+		self._set_thread(threading.Thread(target = self.run))
 		self._thread.start()
 		logger.info(f"launch: subthread launced for task{self}")
 	
@@ -338,16 +374,29 @@ class ReplicationTask(models.Model):
 		return "UNKNOWN"
 	
 	
+	def add_error_text(self, text):
+		if self.error_text is None:
+			self.error_text = text + "\n"
+		else:
+			self.error_text += text + "\n"
+	
+	
 	def run(self):
 		logger.debug("run: starting replication")
 		self.mark_start()
-		
-		
-		self.check_connection_via_ICMP()
-		
-		
+		reachable = self.check_connection_via_ICMP()
+		if self.replication.remote_host is None:
+			logger.info(f"run: running local replication")
+			self.run_replication()
+		else:
+			if reachable is not False and reachable is not None:
+				logger.info(f"run: running remote replication")
+				self.run_replication()
+			else:
+				logger.error(f"run: replication is remote, but could not reach {self.replication.remote_host}, will not replicate")
+				self.error = True
+				self.add_error_text(f"Replication is remote, but could not reach {self.replication.remote_host}, will not replicate")
 		self.mark_end()
-		pass
 
 
 
