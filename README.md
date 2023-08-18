@@ -50,7 +50,12 @@ planned features:
  - [ ] check/validate replication options
  - [ ] redesign list of replications
  - [ ] fix non-zero return code of rsync command not threated as error
-
+ - [ ] use one form for add and edit replication
+ - [ ] add returncode to ReplicationTask model
+ - [ ] start_server.sh runs in background
+ - [ ] add stop_server.sh
+ - [ ] add authorisation via login/password
+ - [ ] add INSTALLATION section to README.md
 
 
 
