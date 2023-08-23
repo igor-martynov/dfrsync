@@ -48,14 +48,15 @@ planned features:
  - [ ] check/validate replication src and dest
  - [ ] check/validate replication options
  - [ ] redesign list of replications
- - [ ] fix non-zero return code of rsync command not threated as error
+ - [x] fix non-zero return code of rsync command not threated as error
  - [ ] use one form for add and edit replication
- - [ ] add returncode to ReplicationTask model
+ - [x] add returncode to ReplicationTask model
  - [ ] start_server.sh runs in background
  - [ ] add stop_server.sh to stop perver
  - [ ] add authorization via login/password
  - [x] add INSTALLATION section to README.md
  - [ ] add favicon.ico file to ./static folder
+ - [ ] rsync binary autodetect
 
 
 

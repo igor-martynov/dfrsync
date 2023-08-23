@@ -147,9 +147,6 @@ class ReplicationSchedule(models.Model):
 	
 	@property
 	def is_every_n_days(self):
-		# if (self.every_n_days is not None 
-		# 	and not self.is_hourly 
-		# 	and not self.is_daily):
 		if (self.every_n_days is not None):
 			return True
 		return False
@@ -208,10 +205,6 @@ class ReplicationSchedule(models.Model):
 			return _date_str
 		
 		if self.is_daily:
-			# if self.second is None:
-			# 	date_str = f"{self.hour:02}:{self.minute:02}:00"
-			# else:
-			# 	date_str = f"{self.hour:02}:{self.minute:02}:{self.second:02}"
 			self.job = schedule.every().day.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 		elif self.is_hourly:
 			if self.second is None:
@@ -220,10 +213,6 @@ class ReplicationSchedule(models.Model):
 				date_str = f"{self.minute:02}:{self.second:02}"
 			self.job = schedule.every().hour.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 		elif self.is_weekly:
-			# if self.second is None:
-			# 	date_str = f"{self.hour:02}:{self.minute:02}:00"
-			# else:
-			# 	date_str = f"{self.hour:02}:{self.minute:02}:{self.second:02}"
 			match self.dow:
 				case 0:
 					self.job = schedule.every().monday.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
@@ -370,15 +359,15 @@ class ReplicationTask(models.Model):
 		if not self.dry_run:
 			try:
 				logger.debug(f"run_replication: will run cmd: {rsync_cmd}")
-				self.cmd_output_text, returncode = run_command_with_returncode(rsync_cmd)
-				logger.debug(f"run_replication: cmd executed. returncode is {returncode}")
-				if self.returncode_is_ok(returncode):
+				self.cmd_output_text, self.returncode = run_command_with_returncode(rsync_cmd)
+				logger.debug(f"run_replication: cmd executed. returncode is {self.returncode}")
+				if self.returncode_is_ok(self.returncode):
 					self.OK = True
 					logger.info(f"run_replication: replication is complete, OK")
 				else:
 					self.OK = False
 					self.error = True
-					self.add_error_text(f"Got non-zero returncode {returncode}" + "\n")
+					self.add_error_text(f"Got non-zero returncode {self.returncode}" + "\n")
 					logger.info(f"run_replication: replication is complete, NOT OK")
 			except Exception as e:
 				self.error = True
