@@ -40,7 +40,7 @@ planned features:
  - [x] run scheduler
  - [x] for schedule - show recent runs
  - [ ] auto-cancell replication task if there is more than N tasks of this type already running
- - [ ] show app log
+ - [x] show app log
  - [ ] task runner - show when started and when finished, how long took
  - [ ] redesign page header
  - [ ] post-replication and pre-replication command execution
@@ -55,6 +55,7 @@ planned features:
  - [ ] add stop_server.sh to stop perver
  - [ ] add authorization via login/password
  - [x] add INSTALLATION section to README.md
+ - [ ] add favicon.ico file to ./static folder
 
 
 

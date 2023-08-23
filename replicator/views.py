@@ -42,6 +42,7 @@ class ReplicationAddView(generic.edit.CreateView):
 
 
 	def get_success_url(self):
+		logger.info(f"get_success_url: adding object {self.object}")
 		return reverse("replicator:index")
 
 
@@ -152,6 +153,20 @@ def disable_replication_schedule(request, schedule_id):
 	return HttpResponseRedirect(reverse("replicator:scheduler"))
 
 
+def show_log(request):
+	logger.debug(f"show_log: number of handlers: {len(logger.handlers)}")
+	logger2 = logging.getLogger()
+	if not logger2.hasHandlers() or not logger.hasHandlers():
+		logger.error(f"show_log: error logger has no FileHandlers")
+	fh = logger2.handlers[0]
+	log_file = fh.baseFilename
+	logger.debug(f"show_log: will show log {log_file}")
+	context = {}
+	with open(log_file, "r") as lf:
+		content_list = lf.readlines()
+	context["message"] = f"LOG <br><br> {'<br>'.join(content_list)}"
+	return render(request, "replicator/blank_page.html", context = context)
+		
 
 
 
