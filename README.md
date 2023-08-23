@@ -15,9 +15,7 @@ ROADMAP:
 
 
 
-planned features: 
-
-
+planned features:
 
  - [x] list of replications
  - [x] add replication
@@ -30,6 +28,7 @@ planned features:
  - [x] dayly scedule
  - [x] weekly schedule
  - [ ] monthly schedule
+ - [ ] every N days
  - [ ] schedule one time in future (year + month + dom + time)
  - [x] list of schedules
  - [x] edit schedule
@@ -44,7 +43,7 @@ planned features:
  - [ ] show app log
  - [ ] task runner - show when started and when finished, how long took
  - [ ] redesign page header
- - [ ] post-replication and pre-replication command
+ - [ ] post-replication and pre-replication command execution
  - [x] ensure size of command output log is suffucient
  - [ ] check/validate replication src and dest
  - [ ] check/validate replication options
@@ -53,9 +52,9 @@ planned features:
  - [ ] use one form for add and edit replication
  - [ ] add returncode to ReplicationTask model
  - [ ] start_server.sh runs in background
- - [ ] add stop_server.sh
- - [ ] add authorisation via login/password
- - [ ] add INSTALLATION section to README.md
+ - [ ] add stop_server.sh to stop perver
+ - [ ] add authorization via login/password
+ - [x] add INSTALLATION section to README.md
 
 
 
@@ -68,5 +67,16 @@ This app works in DEBUG mode of django. Use at own risk.
 Please remember to change SECRET_KEY and DEBUG in settings.py at least.
 
 
+
+
+INSTALL:
+
+Python 3.10+ required.
+ 
+pip packages required:
+ - django
+ - schedule
+ - ping3
+ 
 
 

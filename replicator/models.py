@@ -80,7 +80,8 @@ class ReplicationSchedule(models.Model):
 	every hour at MM:SS
 	everyday at HH:MM:SS
 	every monday at HH:MM:SS
-	every 10th day of month
+	every 10th day of month at HH:MM:SS
+	every N days at HH:MM:SS
 	at YYYY-MM-DD HH:MM:SS (one time in future)
 	"""
 	
@@ -89,6 +90,7 @@ class ReplicationSchedule(models.Model):
 	hour = models.IntegerField(default = None, blank = True, null = True)
 	minute = models.IntegerField(default = None, blank = True, null = True)
 	second = models.IntegerField(default = None, blank = True, null = True)
+	every_n_days = models.IntegerField(default = None, blank = True, null = True)
 	dom = models.IntegerField(default = None, blank = True, null = True)
 	month = models.IntegerField(default = None, blank = True, null = True)
 	year = models.IntegerField(default = None, blank = True, null = True)
@@ -102,35 +104,62 @@ class ReplicationSchedule(models.Model):
 	
 	@property
 	def is_hourly(self):
-		if self.hour is None and self.minute is not None and not self.is_daily and not self.is_weekly and not self.is_monthly:
+		if (self.hour is None and self.minute is not None 
+			and not self.is_daily 
+			and not self.is_weekly 
+			and not self.is_monthly):
 			return True
 		return False
 	
 	
 	@property
 	def is_daily(self):
-		if self.hour is not None and self.dom is None and self.month is None and self.year is None and self.dow is None:
+		if (self.hour is not None 
+			and self.dom is None 
+			and self.month is None 
+			and self.year is None 
+			and self.dow is None
+			and not self.is_every_n_days):
 			return True
 		return False
 	
 	
 	@property
 	def is_weekly(self):
-		if self.dow is not None and self.dom is None and not self.is_hourly and not self.is_daily:
+		if (self.dow is not None and self.dom is None 
+			and not self.is_hourly 
+			and not self.is_daily
+			and not self.is_every_n_days):
 			return True
 		return False
 	
 	
 	@property
 	def is_monthly(self):
-		if self.dom is not None and self.dow is None and not self.is_hourly and not self.is_daily:
+		if (self.dom is not None 
+			and self.dow is None 
+			and not self.is_hourly 
+			and not self.is_daily
+			and not self.is_every_n_days):
 			return True
 		return False	
 	
 	
 	@property
+	def is_every_n_days(self):
+		# if (self.every_n_days is not None 
+		# 	and not self.is_hourly 
+		# 	and not self.is_daily):
+		if (self.every_n_days is not None):
+			return True
+		return False
+	
+	
+	@property
 	def is_one_time_in_future(self):
-		if self.year is not None and self.month is not None and not self.is_monthly:
+		if (self.year is not None 
+			and self.month is not None 
+			and not self.is_monthly):
 			return True
 		return False
 		
@@ -149,6 +178,8 @@ class ReplicationSchedule(models.Model):
 				return f"weekly, at {calendar.day_name[self.dow]}, {self.hour:02}:{self.minute:02}:{seconds}"
 			elif self.is_monthly:
 				return f"monthly, at {self.dom} at {self.hour:02}:{self.minute:02}:{seconds}"
+			elif self.is_every_n_days:
+				return f"every {self.every_n_days} days, at {self.hour:02}:{self.minute:02}:{seconds}"
 			elif self.is_one_time_in_future:
 				return f"one time in future, at {self.year}-{self.month}-{self.dom} {self.hour:02}:{self.minute:02}:{seconds}"
 			else:
@@ -169,12 +200,19 @@ class ReplicationSchedule(models.Model):
 		import schedule
 		from .base import ReplicationTaskRunner
 		
-		if self.is_daily:
+		def date_str_res():
 			if self.second is None:
-				date_str = f"{self.hour:02}:{self.minute:02}:00"
+				_date_str = f"{self.hour:02}:{self.minute:02}:00"
 			else:
-				date_str = f"{self.hour:02}:{self.minute:02}:{self.second:02}"
-			self.job = schedule.every().day.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+				_date_str = f"{self.hour:02}:{self.minute:02}:{self.second:02}"
+			return _date_str
+		
+		if self.is_daily:
+			# if self.second is None:
+			# 	date_str = f"{self.hour:02}:{self.minute:02}:00"
+			# else:
+			# 	date_str = f"{self.hour:02}:{self.minute:02}:{self.second:02}"
+			self.job = schedule.every().day.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 		elif self.is_hourly:
 			if self.second is None:
 				date_str = f"{self.minute:02}:00"
@@ -182,32 +220,34 @@ class ReplicationSchedule(models.Model):
 				date_str = f"{self.minute:02}:{self.second:02}"
 			self.job = schedule.every().hour.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 		elif self.is_weekly:
-			if self.second is None:
-				date_str = f"{self.hour:02}:{self.minute:02}:00"
-			else:
-				date_str = f"{self.hour:02}:{self.minute:02}:{self.second:02}"
+			# if self.second is None:
+			# 	date_str = f"{self.hour:02}:{self.minute:02}:00"
+			# else:
+			# 	date_str = f"{self.hour:02}:{self.minute:02}:{self.second:02}"
 			match self.dow:
 				case 0:
-					self.job = schedule.every().monday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+					self.job = schedule.every().monday.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 				case 1:
-					self.job = schedule.every().tuesday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+					self.job = schedule.every().tuesday.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 				case 2:
-					self.job = schedule.every().wednesday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+					self.job = schedule.every().wednesday.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 				case 3:
-					self.job = schedule.every().thursday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+					self.job = schedule.every().thursday.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 				case 4:
-					self.job = schedule.every().friday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+					self.job = schedule.every().friday.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 				case 5:
-					self.job = schedule.every().saturday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+					self.job = schedule.every().saturday.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 				case 6:
-					self.job = schedule.every().sunday.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+					self.job = schedule.every().sunday.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
+		elif self.every_n_days:
+			self.job = schedule.every(self.every_n_days).days.at(date_str_res()).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
 		elif self.is_monthly:
 			raise NotImplemented
-			# monthly does not work
+			# monthly is not supported by schedule
 			# self.job = schedule.every().month.at(date_str).do(ReplicationTaskRunner.add_task_for_replication, self.replication, schedule = self)
-			
 			pass
-		
+		elif self.is_one_time_in_future:
+			raise NotImplemented		
 		else:
 			logger.error(f"load_schedule_object: unsupported schedule type, please check")
 			return
@@ -237,7 +277,8 @@ class ReplicationTask(models.Model):
 	cancelled = models.BooleanField(default = False)
 	error_text = models.TextField(blank = True, null = True)
 	cmd_output_text = models.TextField(blank = True, null = True)
-
+	returncode = models.IntegerField(default = None, blank = True, null = True)
+	
 	RETRY_DELAY_S = 5.0
 	
 	
