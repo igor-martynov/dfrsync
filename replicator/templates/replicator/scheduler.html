@@ -4,8 +4,8 @@
 
 <p>Schedules:</p>
 {% for schedule in schedules %}
-<a href="{% url 'replicator:edit_schedule' schedule.id %}">{{ schedule.name }}</a> <span style="display: inline-block; width: 1ch;"> </span> - ({{ schedule.hr_schedule }})
-[ <a href="{% url 'replicator:schedule_detail' schedule.id %}">show</a> ]
+<a href="{% url 'replicator:schedule_detail' schedule.id %}">{{ schedule.name }}</a> <span style="display: inline-block; width: 1ch;"> </span> - ({{ schedule.hr_schedule }})
+[ <a href="{% url 'replicator:edit_schedule' schedule.id %}">edit</a> ]
 {% if schedule.enabled %}
  <span style="color: green;">enabled</span> [<a href="{% url 'replicator:disable_schedule' schedule.id %}">disable</a>] 
 {% else %}
