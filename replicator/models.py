@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django import forms
+
 # import datetime
 import logging
 import traceback
@@ -125,10 +126,7 @@ class ReplicationSchedule(models.Model):
 	
 	@property
 	def is_hourly(self):
-		if (self.hour is None and self.minute is not None 
-			and not self.is_daily 
-			and not self.is_weekly 
-			and not self.is_monthly):
+		if self.hourly is True:
 			return True
 		return False
 	

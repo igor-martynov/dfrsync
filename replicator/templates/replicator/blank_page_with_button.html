@@ -3,7 +3,7 @@
 <form method="POST">
 	{% csrf_token %}
 	
-	{{ message }}<br>
+	{{ message | safe | escape }}<br>
 	<br>
 	<input type="submit" name="OK" value="OK">
 </form>
