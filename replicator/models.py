@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django import forms
 # import datetime
 import logging
 import traceback
@@ -87,15 +88,35 @@ class ReplicationSchedule(models.Model):
 	
 	name = models.CharField(max_length = 128, unique = True, blank = True, null = True)
 	replication = models.ForeignKey(Replication, on_delete = models.CASCADE)
-	hour = models.IntegerField(default = None, blank = True, null = True)
-	minute = models.IntegerField(default = None, blank = True, null = True)
-	second = models.IntegerField(default = None, blank = True, null = True)
+	# hour = models.IntegerField(default = None, blank = True, null = True)
+	# minute = models.IntegerField(default = None, blank = True, null = True)
+	# second = models.IntegerField(default = None, blank = True, null = True)
+	time = models.TimeField(default = None, blank = True, null = True)#, widget = forms.TimeInput(attrs = {"type": "time"}, format = "%H:%M:%S"))
+	hourly = models.BooleanField(default = False, blank = False, null = False)
 	every_n_days = models.IntegerField(default = None, blank = True, null = True)
 	dom = models.IntegerField(default = None, blank = True, null = True)
 	month = models.IntegerField(default = None, blank = True, null = True)
 	year = models.IntegerField(default = None, blank = True, null = True)
 	dow = models.IntegerField(default = None, blank = True, null = True)
 	enabled = models.BooleanField(default = True)
+	
+	
+	@property
+	def hour(self):
+		if not self.hourly:
+			return self.time.hour
+		else:
+			return None
+	
+	
+	@property
+	def minute(self):
+		return self.time.minute
+	
+	
+	@property
+	def second(self):
+		return self.time.second
 	
 	
 	def get_absolute_url(self):

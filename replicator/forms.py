@@ -20,4 +20,5 @@ class ReplicationScheduleForm(forms.ModelForm):
 	class Meta:
 		model = ReplicationSchedule
 		fields = "__all__"
+		widgets = {"time": forms.TimeInput(attrs = {"type": "time"}, format = '%H:%M:%S')}
 

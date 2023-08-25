@@ -57,7 +57,8 @@ planned features:
  - [x] add INSTALLATION section to README.md
  - [ ] add favicon.ico file to ./static folder
  - [ ] rsync binary autodetect
-
+ - [x] replace hour+minute+second with time field in ReplicationSchedule model
+ 
 
 
 
@@ -66,7 +67,7 @@ SECURITY:
 
 
 This app works in DEBUG mode of django. Use at own risk.
-Please remember to change SECRET_KEY and DEBUG in settings.py at least.
+Please remember to change SECRET_KEY, ALLOWED_HOSTS and DEBUG in settings.py at least.
 
 
 
@@ -77,8 +78,8 @@ Python 3.10+ required.
  
 pip packages required:
  - django
- - schedule
- - ping3
+ - schedule (used for replication scheduling)
+ - ping3 (used for ICMP remote host probe)
  
 
 
