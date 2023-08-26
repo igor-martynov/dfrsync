@@ -28,6 +28,7 @@ class Replication(models.Model):
 	retries = models.IntegerField(default = 3)
 	pre_cmd = models.CharField(max_length = 512, default = None, blank = True, null = True)
 	post_cmd = models.CharField(max_length = 512, default = None, blank = True, null = True)
+	check_ping = models.BooleanField(default = True)
 	RSYNC_BIN = "rsync"
 
 
@@ -303,7 +304,15 @@ class ReplicationTask(models.Model):
 	
 	def __str__(self):
 		return f"ReplicationTask {self.id} for replica {self.replication}"
-		
+	
+	
+	@property
+	def took_timedelta(self):
+		if self.start is None or self.end is None:
+			return "N/A"
+			
+		return self.end - self.start
+	
 	
 	# TODO: under testing and rewrite
 	def check_connection_via_ICMP(self):
@@ -433,18 +442,24 @@ class ReplicationTask(models.Model):
 	def run(self):
 		logger.debug("run: starting replication")
 		self.mark_start()
-		reachable = self.check_connection_via_ICMP()
-		if self.replication.remote_host is None:
-			logger.info(f"run: running local replication")
-			self.run_replication()
-		else:
-			if reachable is not False and reachable is not None:
-				logger.info(f"run: running remote replication")
+		
+		if self.replication.check_ping:
+			logger.debug(f"run: will check ping - check_ping set to True")
+			reachable = self.check_connection_via_ICMP()
+			if self.replication.remote_host is None:
+				logger.info(f"run: running local replication")
 				self.run_replication()
 			else:
-				logger.error(f"run: replication is remote, but could not reach {self.replication.remote_host}, will not replicate")
-				self.error = True
-				self.add_error_text(f"Replication is remote, but could not reach {self.replication.remote_host}, will not replicate")
+				if reachable is not False and reachable is not None:
+					logger.info(f"run: running remote replication")
+					self.run_replication()
+				else:
+					logger.error(f"run: replication is remote, but could not reach {self.replication.remote_host}, will not replicate")
+					self.error = True
+					self.add_error_text(f"Replication is remote, but could not reach {self.replication.remote_host}, will not replicate")
+		else:
+			logger.debug(f"run: will not check ping")
+			self.run_replication()
 		self.mark_end()
 
 

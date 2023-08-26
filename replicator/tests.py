@@ -35,8 +35,6 @@ class ReplicationModelTests(TestCase):
 	def test_resulting_cmd_remote_easy(self):
 		test_replication = Replication(src = "/tmp/1/", dest = "username-1@hostname1.example:/tmp2/", options = "-axv --delete")
 		self.assertEqual(test_replication.resulting_cmd, "rsync -axv --delete /tmp/1/ username-1@hostname1.example:/tmp2/")
-	
-
 
 
 

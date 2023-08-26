@@ -5,14 +5,14 @@ Replication task runner <br><br>
 
 Tasks:<br>
 {% for replication in all_replications %}
-{{ replication.name }} - {{ replication.src }} --> {{ replication.dest }} <a href="{% url 'replicator:run_replication_task' replication.id %}">run</a> <br>
+{{ replication.name }} - {{ replication.src }} --> {{ replication.dest }} [<a href="{% url 'replicator:run_replication_task' replication.id %}">run</a>]<br>
 {% endfor %}
 <br>
 <br>
 
 Recent tasks:<br>
 {% for replication_task in running_tasks %}
-<a href="{% url 'replicator:replication_task_detail' replication_task.id %}">{{ replication_task }}</a>{% if replication_task.schedule != None %} ({{ replication_task.schedule }}, scheduled: {{ replication_task.schedule.hr_schedule }}) {% endif %} ({% if replication_task.error %} <span style="color: red;">{{ replication_task.state }}</span> {% else %} <span style="color: green;">{{ replication_task.state }}</span> {% endif %}) <br>
+<a href="{% url 'replicator:replication_task_detail' replication_task.id %}">{{ replication_task }}</a> - started: {{ replication_task.start }}, took: {{ replication_task.took_timedelta }} - {% if replication_task.schedule != None %} (scheduled: {{ replication_task.schedule.hr_schedule }}) {% endif %} ({% if replication_task.error %} <span style="color: red;">{{ replication_task.state }}</span> {% else %} <span style="color: green;">{{ replication_task.state }}</span> {% endif %}) <br>
 {% endfor %}
 
 
