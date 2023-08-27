@@ -70,7 +70,32 @@ class ReplicationScheduleModelTests(TestCase):
 
 
 
+class ReplicationTaskModelTest(TestCase):
+	
+	
+	def test_returncode_is_ok(self):
+		test_r = Replication(src = "/tmp/", dest = "/temp2/")
+		test_rt = ReplicationTask(replication = test_r, returncode = 0)
+		self.assertIs(test_rt.returncode_is_ok, True)
+	
+	
+	def test_returncode_is_not_ok(self):
+		test_r = Replication(src = "/tmp/", dest = "/temp2/")
+		test_rt = ReplicationTask(replication = test_r, returncode = 10)
+		self.assertIs(test_rt.returncode_is_ok, False)
+	
 
-
+	def test_check_connection_via_ICMP_ok(self):
+		test_r = Replication(src = "root@localhost:/tmp/", dest = "/temp2/")
+		test_rt = ReplicationTask(replication = test_r)
+		self.assertEqual(test_rt.check_connection_via_ICMP(), True)
+		pass
+	
+	
+	def test_check_connection_via_ICMP_not_ok(self):
+		test_r = Replication(src = "root@localhost123123:/tmp/", dest = "/temp2/")
+		test_rt = ReplicationTask(replication = test_r)
+		self.assertEqual(test_rt.check_connection_via_ICMP(), False)
+	
 
 

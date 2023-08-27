@@ -40,6 +40,7 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 	TASK_START_DELAY = 0.5
 	LOOP_DELAY = 1.0
 	LOOP_DELAY_ON_BLOCKER = 0.1
+	MAX_TASKS_FOR_REPLICA = 2
 	thread = None
 	
 	
@@ -48,16 +49,20 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 	
 	
 	@staticmethod
-	def create_new_replication_task(replication, schedule = None):
+	def create_new_task(replication, schedule = None):
 		new_task = ReplicationTask.objects.create(replication = replication, dry_run = replication.dry_run, schedule = schedule)
-		logger.info(f"create_new_replication_task: created new task {new_task}")
+		logger.info(f"create_new_task: created new task {new_task}")
 		return new_task
 	
 	
 	@classmethod
 	def add_task_for_replication(cls, replication, schedule = None):
-		new_task = cls.create_new_replication_task(replication, schedule = schedule)
+		new_task = cls.create_new_task(replication, schedule = schedule)
 		cls.running_tasks.append(new_task)
+		blockers = cls.find_blockers_for_replication_task(new_task)
+		if len(blockers) >= cls.MAX_TASKS_FOR_REPLICA:
+			logger.info(f"add_task_for_replication: will instantly cancel new task {new_task} because there are already 2 blocking tasks")
+			cls.cancel_replication_task(new_task)
 		logger.info(f"add_task_for_replication: added new task {new_task}, schedule: {schedule}")
 		return new_task
 	
@@ -80,41 +85,56 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 		logger.info(f"cancel_replication_task: task cancelled: {task}")
 		if task in cls.running_tasks and not task.running:
 			logger.debug(f"cancel_replication_task: will cancel task {task}")
-			cls.running_tasks.remove(task)
-			task.cancelled = True
-			task.save()
+			# cls.running_tasks.remove(task)
+			# task.cancelled = True
+			# task.save()
+			task.cancel()
 			logger.debug(f"cancel_replication_task: task cancelled {task}")
 	
 	
 	@classmethod
-	def find_blocker_for_replication_task(cls, task):
+	def find_blockers_for_replication_task(cls, task):
 		"""return first found blocker of running now tasks"""
-		logger.debug(f"find_blocker_for_replication_task: starting")
+		logger.debug(f"find_blockers_for_replication_task: starting")
+		blockers = []
 		for r_task in cls.running_tasks:
-			if r_task.complete == True:
-				logger.debug(f"find_blocker_for_replication_task: ignored complete task {r_task}")
+			if r_task.complete is True:
+				logger.debug(f"find_blockers_for_replication_task: ignored complete task {r_task}")
+				continue
+			if r_task.cancelled is True:
+				logger.debug(f"find_blockers_for_replication_task: ignored cancelled task {r_task}")
 				continue
 			if r_task == task:
-				logger.debug(f"find_blocker_for_replication_task: ignored the same task {r_task}")
+				logger.debug(f"find_blockers_for_replication_task: ignored the same task {r_task}")
 				continue
 			if not r_task.running:
-				logger.debug(f"find_blocker_for_replication_task: ignored not_running task {r_task}")
-				continue
+				if task.id > r_task.id:
+					blockers.append(r_task)
+					logger.debug(f"find_blockers_for_replication_task: added task {r_task} as blocking because its id is less than target task")
+				else:
+					logger.debug(f"find_blockers_for_replication_task: ignored not running task {r_task}")
+					continue
 			if task.replication.src.startswith(r_task.replication.src):
-				logger.debug(f"find_blocker_for_replication_task: detected crossing of SRC of two tasks: {task} {task.replication.src} and {r_task} {r_task.replication.src} - blocker is wider than current")
-				return r_task
+				logger.debug(f"find_blockers_for_replication_task: detected crossing of SRC of two tasks: {task} {task.replication.src} and {r_task} {r_task.replication.src} - blocker is wider than current")
+				blockers.append(r_task)
+				continue
 			if r_task.replication.src.startswith(task.replication.src):
-				logger.debug(f"find_blocker_for_replication_task: detected crossing of SRC of two tasks: {task} {task.replication.src} and {r_task} {r_task.replication.src} - current is wider than blocker")
-				return r_task
-		logger.debug(f"find_blocker_for_replication_task: could not find blocking task for task {task}")
-		return None
+				logger.debug(f"find_blockers_for_replication_task: detected crossing of SRC of two tasks: {task} {task.replication.src} and {r_task} {r_task.replication.src} - current is wider than blocker")
+				blockers.append(r_task)
+				continue
+		if len(blockers) == 0:
+			logger.debug(f"find_blockers_for_replication_task: could not find blocking tasks for task {task}")
+			return blockers
+		else:
+			logger.debug(f"find_blockers_for_replication_task: found {len(blockers)} blockers: {[str(b) for b in blockers]}")
+			return blockers
 	
 	
 	@classmethod
 	def get_tasks_to_run(cls):
 		tasks_to_run = []
 		for task in cls.running_tasks:
-			if task.complete or task.running:
+			if task.complete or task.running or task.cancelled:
 				continue
 			tasks_to_run.append(task)
 		return tasks_to_run
@@ -122,6 +142,9 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 	
 	@classmethod
 	def launch_task(cls, task):
+		if task.cancelled:
+			logger.debug(f"launch_task: NOT launching task {task} - because it is cancelled")
+			return
 		logger.info(f"launch_task: launching task {task}")
 		task.launch()
 	
@@ -140,8 +163,8 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 				time.sleep(cls.LOOP_DELAY)
 				continue
 			for task in tasks_to_run:
-				blocker_task = cls.find_blocker_for_replication_task(task)
-				if blocker_task is not None:
+				blocker_task = cls.find_blockers_for_replication_task(task)
+				if len(blocker_task) != 0:
 					logger.debug(f"task {task} has blocker {blocker_task}")
 					time.sleep(cls.LOOP_DELAY_ON_BLOCKER)
 					continue

@@ -287,7 +287,6 @@ class ReplicationTask(models.Model):
 	error_text = models.TextField(blank = True, null = True)
 	cmd_output_text = models.TextField(blank = True, null = True)
 	returncode = models.IntegerField(default = None, blank = True, null = True)
-	
 	RETRY_DELAY_S = 5.0
 	
 	
@@ -310,11 +309,10 @@ class ReplicationTask(models.Model):
 	def took_timedelta(self):
 		if self.start is None or self.end is None:
 			return "N/A"
-			
 		return self.end - self.start
 	
 	
-	# TODO: under testing and rewrite
+	# TODO: under testing
 	def check_connection_via_ICMP(self):
 		"""check connection via ICMP.
 		returns True if reachable, False if unreachable, None if there is no remote_host to connect (both src and dest are local
@@ -371,25 +369,56 @@ class ReplicationTask(models.Model):
 	
 	def check_options(self):
 		pass
-	
-	
-	def returncode_is_ok(self, returncode):
-		if returncode == 0:
+
+
+	@property
+	def returncode_is_ok(self):
+		""" check returncode
+		
+		according to man rsync:
+		EXIT VALUES
+       o      0 - Success
+       o      1 - Syntax or usage error
+       o      2 - Protocol incompatibility
+       o      3 - Errors selecting input/output files, dirs
+       o
+       o      4 - Requested action not supported. Either:
+                     an attempt was made to manipulate 64-bit files on a platform that cannot support them
+              o      an option was specified that is supported by the client and not by the server
+       o      5 - Error starting client-server protocol
+       o      6 - Daemon unable to append to log-file
+       o      10 - Error in socket I/O
+       o      11 - Error in file I/O
+       o      12 - Error in rsync protocol data stream
+       o      13 - Errors with program diagnostics
+       o      14 - Error in IPC code
+       o      20 - Received SIGUSR1 or SIGINT
+       o      21 - Some error returned by waitpid()
+       o      22 - Error allocating core memory buffers
+       o      23 - Partial transfer due to error
+       o      24 - Partial transfer due to vanished source files
+       o      25 - The --max-delete limit stopped deletions
+       o      30 - Timeout in data send/receive
+       o      35 - Timeout waiting for daemon connection
+
+		
+		"""
+		if self.returncode == 0 or self.returncode == 24:
 			return True
 		else:
 			return False
 	
 	
 	def run_replication(self):
-		logger.debug(f"run_replication: starting task for replication {self.replication}")
+		logger.debug(f"run_replication: starting task {self} for replication {self.replication}")
 		rsync_cmd = self.replication.resulting_cmd
 		self.mark_start()
 		if not self.dry_run:
 			try:
-				logger.debug(f"run_replication: will run cmd: {rsync_cmd}")
+				logger.debug(f"run_replication: ready to run cmd: {rsync_cmd}")
 				self.cmd_output_text, self.returncode = run_command_with_returncode(rsync_cmd)
-				logger.debug(f"run_replication: cmd executed. returncode is {self.returncode}")
-				if self.returncode_is_ok(self.returncode):
+				logger.debug(f"run_replication: cmd execution complete. returncode is {self.returncode}")
+				if self.returncode_is_ok:
 					self.OK = True
 					logger.info(f"run_replication: replication is complete, OK")
 				else:
@@ -409,6 +438,11 @@ class ReplicationTask(models.Model):
 		logger.debug(f"run_replication: replication complete, result is: {self.cmd_output_text}")
 	
 	
+	def cancel(self):
+		self.cancelled = True
+		self.save()
+	
+	
 	def launch(self):
 		self._set_thread(threading.Thread(target = self.run))
 		self._thread.start()
@@ -417,6 +451,8 @@ class ReplicationTask(models.Model):
 	
 	@property		
 	def state(self):
+		if self.cancelled:
+			return "cancelled"
 		if self.start is not None and self.running:
 			if not self.error:
 				return "running"
