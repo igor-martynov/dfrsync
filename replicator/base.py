@@ -62,7 +62,9 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 		blockers = cls.find_blockers_for_replication_task(new_task)
 		if len(blockers) >= cls.MAX_TASKS_FOR_REPLICA:
 			logger.info(f"add_task_for_replication: will instantly cancel new task {new_task} because there are already 2 blocking tasks")
+			new_task.comment = "Cancelled due to existing pending task"
 			cls.cancel_replication_task(new_task)
+			new_task.save()
 		logger.info(f"add_task_for_replication: added new task {new_task}, schedule: {schedule}")
 		return new_task
 	
@@ -85,9 +87,6 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 		logger.info(f"cancel_replication_task: task cancelled: {task}")
 		if task in cls.running_tasks and not task.running:
 			logger.debug(f"cancel_replication_task: will cancel task {task}")
-			# cls.running_tasks.remove(task)
-			# task.cancelled = True
-			# task.save()
 			task.cancel()
 			logger.debug(f"cancel_replication_task: task cancelled {task}")
 	

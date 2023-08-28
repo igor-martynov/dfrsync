@@ -39,9 +39,9 @@ planned features:
  - [x] load list of schedules
  - [x] run scheduler
  - [x] for schedule - show recent runs
- - [ ] auto-cancell replication task if there is more than N tasks of this type already running
+ - [x] auto-cancell replication task if there is more than N tasks of this type already running
  - [x] show app log
- - [ ] task runner - show when started and when finished, how long took
+ - [x] task runner - show when started and when finished, how long took
  - [ ] redesign page header
  - [ ] post-replication and pre-replication command execution
  - [x] ensure size of command output log is suffucient
@@ -53,6 +53,7 @@ planned features:
  - [x] add returncode to ReplicationTask model
  - [ ] start_server.sh runs in background
  - [ ] add stop_server.sh to stop perver
+ - [ ] create systemd .service file
  - [ ] add authorization via login/password
  - [x] add INSTALLATION section to README.md
  - [ ] add favicon.ico file to ./static folder

@@ -287,6 +287,7 @@ class ReplicationTask(models.Model):
 	error_text = models.TextField(blank = True, null = True)
 	cmd_output_text = models.TextField(blank = True, null = True)
 	returncode = models.IntegerField(default = None, blank = True, null = True)
+	comment = models.TextField(default = None, blank = True, null = True)
 	RETRY_DELAY_S = 5.0
 	
 	
