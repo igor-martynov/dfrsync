@@ -66,7 +66,6 @@ class Replication(models.Model):
 			remote_host = remote_part.split(":")[0].split("@")[1]
 		else:
 			remote_host = remote_part.split(":")[0]
-		logger.debug(f"remote_host: will return remote host {remote_host}")
 		return remote_host
 		
 	
@@ -358,7 +357,7 @@ class ReplicationTask(models.Model):
 		self.running = False
 		self.complete = True
 		self.save()
-		
+			
 	
 	def check_src(self):
 		pass
@@ -414,34 +413,38 @@ class ReplicationTask(models.Model):
 		logger.debug(f"run_replication: starting task {self} for replication {self.replication}")
 		rsync_cmd = self.replication.resulting_cmd
 		self.mark_start()
+		import time
+		time.sleep(10)
 		if not self.dry_run:
 			try:
-				logger.debug(f"run_replication: ready to run cmd: {rsync_cmd}")
+				logger.debug(f"run_replication: id {self.id} - ready to run cmd: {rsync_cmd}")
 				self.cmd_output_text, self.returncode = run_command_with_returncode(rsync_cmd)
-				logger.debug(f"run_replication: cmd execution complete. returncode is {self.returncode}")
+				logger.debug(f"run_replication: id {self.id} - cmd execution complete. returncode is {self.returncode}")
 				if self.returncode_is_ok:
 					self.OK = True
-					logger.info(f"run_replication: replication is complete, OK")
+					logger.info(f"run_replication: id {self.id} - replication is complete, OK")
 				else:
 					self.OK = False
 					self.error = True
 					self.add_error_text(f"Got non-zero returncode {self.returncode}" + "\n")
-					logger.info(f"run_replication: replication is complete, NOT OK")
+					logger.info(f"run_replication: id {self.id} - replication is complete, NOT OK")
 			except Exception as e:
 				self.error = True
 				self.error_text = str(e)
-				logger.error(f"run_replication: got error {e}, traceback: {traceback.format_exc()}")
+				logger.error(f"run_replication: id {self.id} - got error {e}, traceback: {traceback.format_exc()}")
 			self.mark_end()
 			self.save()
 		else:
-			logger.debug(f"run_replication: should run command: {rsync_cmd}, but DRY_RUN is enabled.")
+			logger.debug(f"run_replication: id {self.id} - should run command: {rsync_cmd}, but DRY_RUN is enabled.")
 			pass
-		logger.debug(f"run_replication: replication complete, result is: {self.cmd_output_text}")
+		logger.debug(f"run_replication: replication id {self.id} complete, result is: {self.cmd_output_text}")
 	
 	
 	def cancel(self):
+		logger.info(f"cancel: this task {self} is being cancelled")
 		self.cancelled = True
 		self.save()
+		logger.info(f"cancel: this task {self} cancelled, saved")
 	
 	
 	def launch(self):

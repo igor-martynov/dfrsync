@@ -74,6 +74,7 @@ def run_replication_task(request, replication_id):
 	return HttpResponseRedirect(reverse("replicator:replication_task_runner"))
 
 
+# TODO: this does not work
 def cancel_replication_task(request, task_id):
 	task = get_object_or_404(ReplicationTask, pk = task_id)
 	logger.debug(f"cancel_replication_task: requested cancel of replication task: {task}")
