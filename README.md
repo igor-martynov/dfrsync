@@ -61,12 +61,12 @@ planned features:
  - [x] replace hour+minute+second with time field in ReplicationSchedule model
  - [ ] check task simultaneous launching
  - [ ] more test coverage
+ - [ ] priority of enabled field: most priority is replication, schedule is least
  
 
 
 
 SECURITY:
-
 
 
 This app works in DEBUG mode of django. Use at own risk.
@@ -82,7 +82,12 @@ Python 3.10+ required.
 pip packages required:
  - django
  - schedule (used for replication scheduling)
- - ping3 (used for ICMP remote host probe)
+ - ping3 (used for ICMP remote host probes)
  
+Please make sure all this present on system.
+
+
+
+
 
 

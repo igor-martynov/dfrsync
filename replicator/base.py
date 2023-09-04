@@ -96,46 +96,6 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 			return False
 	
 	
-	# # TODO: old, remove this
-	# @classmethod
-	# def find_blockers_for_replication_task(cls, task):
-	# 	"""return first found blocker of running now tasks"""
-	# 	logger.debug(f"find_blockers_for_replication_task: starting")
-	# 	blockers = []
-	# 	for r_task in cls.running_tasks:
-	# 		if r_task.complete is True:
-	# 			# logger.debug(f"find_blockers_for_replication_task: ignored complete task {r_task}")
-	# 			continue
-	# 		if r_task.cancelled is True:
-	# 			# logger.debug(f"find_blockers_for_replication_task: ignored cancelled task {r_task}")
-	# 			continue
-	# 		if r_task == task:
-	# 			# logger.debug(f"find_blockers_for_replication_task: ignored the same task {r_task}")
-	# 			continue
-	# 		if not r_task.running:
-	# 			if task.id > r_task.id:
-	# 				blockers.append(r_task)
-	# 				logger.debug(f"find_blockers_for_replication_task: added task {r_task} as blocking because its id is less than target task")
-	# 			else:
-	# 				logger.debug(f"find_blockers_for_replication_task: ignored running task {r_task}")
-	# 				continue
-	# 		if task.replication.src.startswith(r_task.replication.src):
-	# 			logger.debug(f"find_blockers_for_replication_task: detected crossing of SRC of two tasks: {task} {task.replication.src} and {r_task} {r_task.replication.src} - blocker is wider than current")
-	# 			blockers.append(r_task)
-	# 			continue
-	# 		if r_task.replication.src.startswith(task.replication.src):
-	# 			logger.debug(f"find_blockers_for_replication_task: detected crossing of SRC of two tasks: {task} {task.replication.src} and {r_task} {r_task.replication.src} - current is wider than blocker")
-	# 			blockers.append(r_task)
-	# 			continue
-	# 	if len(blockers) == 0:
-	# 		logger.debug(f"find_blockers_for_replication_task: could not find blocking tasks for task {task}")
-	# 		return blockers
-	# 	else:
-	# 		logger.debug(f"find_blockers_for_replication_task: task: {task.id} - found {len(blockers)} blockers: {[str(b) for b in blockers]}")
-	# 		return blockers
-	
-	
-	# NEW version
 	@classmethod
 	def find_blockers_for_task(cls, task):
 		# logger.debug(f"find_blockers_for_task: starting")
@@ -280,8 +240,8 @@ class ReplicationScheduler(object, metaclass = MetaSingleton):
 	
 	@classmethod
 	def load_all_schedules(cls):
-		all_schedules = ReplicationSchedule.objects.all().filter(enabled = True)
-		logger.debug(f"load_all_schedules: all_schedules: {all_schedules}")
+		all_schedules = ReplicationSchedule.objects.all().filter(enabled = True).filter(replication__enabled = True)
+		logger.debug(f"load_all_schedules: all enabled schedules: {all_schedules} (total: {len(all_schedules)})")
 		for s in all_schedules:
 			s.load_schedule_object()
 		logger.info(f"load_all_schedules: all jobs loaded to scheduler. current jobs: {schedule.jobs}")
