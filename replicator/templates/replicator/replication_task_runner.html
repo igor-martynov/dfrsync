@@ -13,7 +13,10 @@ Tasks:<br>
 Recent tasks:<br>
 {% for replication_task in running_tasks %}
 <a href="{% url 'replicator:replication_task_detail' replication_task.id %}">{{ replication_task }}</a> - started: {{ replication_task.start }}, took: {{ replication_task.took_timedelta }} - {% if replication_task.schedule != None %} (scheduled: {{ replication_task.schedule.hr_schedule }}) {% endif %} 
-({% if replication_task.error %} <span style="color: red;">{{ replication_task.state }}</span> {% elif replication_task.cancelled %} <span style="color: yellow;">{{ replication_task.state }}</span> {% else %} <span style="color: green;">{{ replication_task.state }}</span> {% endif %})<br>
+({% if replication_task.error %} <span style="color: red;">{{ replication_task.state }}</span> 
+{% elif replication_task.pending %} <span style="color: grey;">{{ replication_task.state }}</span> 
+{% elif replication_task.cancelled %} <span style="color: yellow;">{{ replication_task.state }}</span> 
+{% else %} <span style="color: green;">{{ replication_task.state }}</span> {% endif %})<br>
 {% endfor %}
 
 

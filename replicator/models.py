@@ -413,8 +413,6 @@ class ReplicationTask(models.Model):
 		logger.debug(f"run_replication: starting task {self} for replication {self.replication}")
 		rsync_cmd = self.replication.resulting_cmd
 		self.mark_start()
-		import time
-		time.sleep(10)
 		if not self.dry_run:
 			try:
 				logger.debug(f"run_replication: id {self.id} - ready to run cmd: {rsync_cmd}")
@@ -453,6 +451,12 @@ class ReplicationTask(models.Model):
 		logger.info(f"launch: subthread launced for task{self}")
 	
 	
+	@property
+	def pending(self):
+		if self.start is None and not self.running and not self.cancelled:
+			return "pending"
+	
+	
 	@property		
 	def state(self):
 		if self.cancelled:
@@ -462,7 +466,7 @@ class ReplicationTask(models.Model):
 				return "running"
 			else:
 				return "running, error"
-		if self.start is None and not self.running:
+		if self.pending:
 			return "pending"
 		if not self.running and self.complete and (self.start is not None) and (self.end is not None):
 			if not self.error:

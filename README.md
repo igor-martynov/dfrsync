@@ -59,6 +59,8 @@ planned features:
  - [ ] add favicon.ico file to ./static folder
  - [ ] rsync binary autodetect
  - [x] replace hour+minute+second with time field in ReplicationSchedule model
+ - [ ] check task simultaneous launching
+ - [ ] more test coverage
  
 
 
