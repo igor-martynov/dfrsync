@@ -21,6 +21,13 @@ class IndexView(generic.ListView):
 	
 	def get_queryset(self):
 		return Replication.objects.all()
+	
+	
+	def get_context_data(self, **kwargs):
+		import dfrsync
+		context = super().get_context_data(**kwargs)
+		context["app_version"] = dfrsync.__version__
+		return context
 
 
 

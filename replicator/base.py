@@ -241,7 +241,7 @@ class ReplicationScheduler(object, metaclass = MetaSingleton):
 	@classmethod
 	def load_all_schedules(cls):
 		all_schedules = ReplicationSchedule.objects.all().filter(enabled = True).filter(replication__enabled = True)
-		logger.debug(f"load_all_schedules: all enabled schedules: {all_schedules} (total: {len(all_schedules)})")
+		logger.debug(f"load_all_schedules: all enabled schedules: {[str(s) for s in all_schedules]} (total: {len(all_schedules)})")
 		for s in all_schedules:
 			s.load_schedule_object()
 		logger.info(f"load_all_schedules: all jobs loaded to scheduler. current jobs: {schedule.jobs}")
