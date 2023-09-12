@@ -67,7 +67,7 @@ class Replication(models.Model):
 		else:
 			remote_host = remote_part.split(":")[0]
 		return remote_host
-		
+	
 	
 	@property
 	def resulting_cmd(self):
@@ -89,9 +89,6 @@ class ReplicationSchedule(models.Model):
 	
 	name = models.CharField(max_length = 128, unique = True, blank = True, null = True)
 	replication = models.ForeignKey(Replication, on_delete = models.CASCADE)
-	# hour = models.IntegerField(default = None, blank = True, null = True)
-	# minute = models.IntegerField(default = None, blank = True, null = True)
-	# second = models.IntegerField(default = None, blank = True, null = True)
 	time = models.TimeField(default = None, blank = True, null = True)#, widget = forms.TimeInput(attrs = {"type": "time"}, format = "%H:%M:%S"))
 	hourly = models.BooleanField(default = False, blank = False, null = False)
 	every_n_days = models.IntegerField(default = None, blank = True, null = True)
@@ -215,7 +212,6 @@ class ReplicationSchedule(models.Model):
 	def load_schedule_object(self):
 		import schedule
 		from .base import ReplicationTaskRunner
-		
 		def date_str_res():
 			if self.second is None:
 				_date_str = f"{self.hour:02}:{self.minute:02}:00"
@@ -310,6 +306,42 @@ class ReplicationTask(models.Model):
 		if self.start is None or self.end is None:
 			return "N/A"
 		return self.end - self.start
+	
+	
+	def run_pre_cmd(self):
+		if self.replication.pre_cmd is None:
+			return
+		logger.debug(f"run_pre_cmd: will run pre-cmd {self.replication.pre_cmd}")
+		try:
+			cmd_output_text, returncode = run_command_with_returncode(self.replication.pre_cmd, shell = False)
+		except Exception as e:
+			logger.error(f"run_pre_cmd: got error while executing pre-cmd: {e}, traceback: {traceback.format_exc()}")
+			self.add_error_text(f"pre-cmd: ERROR - EXCEPTION: cmd: {self.replication.pre_cmd}, output: " + cmd_output_text + "\n\n")
+		if returncode != 0:
+			logger.error(f"run_pre_cmd: got error while executing pre-cmd: {self.replication.pre_cmd}. exitcode is: {str(returncode)}, cmd output is {cmd_output_text}")
+			self.add_error_text(f"pre-cmd: ERROR - NON_ZERO_RETURNCODE: cmd: {self.replication.pre_cmd}, output: " + cmd_output_text + "\n\n")
+			return False
+		else:
+			logger.info(f"run_pre_cmd: pre-cmd: {self.replication.pre_cmd} executed successfuly, returncode is: {returncode}, cmd output is: {cmd_output_text}")
+			return True
+	
+	
+	def run_post_cmd(self):
+		if self.replication.post_cmd is None:
+			return
+		logger.debug(f"run_post_cmd: will run post-cmd {self.replication.post_cmd}")
+		try:
+			cmd_output_text, returncode = run_command_with_returncode(self.replication.post_cmd, shell = False)
+		except Exception as e:
+			logger.error(f"run_post_cmd: got error while executing post-cmd: {e}, traceback: {traceback.format_exc()}")
+			self.add_error_text(f"post-cmd: ERROR - EXCEPTION: cmd: {self.replication.post_cmd}, output: " + cmd_output_text + "\n\n")
+		if returncode != 0:
+			logger.error(f"run_post_cmd: got error while executing post-cmd: {self.replication.post_cmd}. exitcode is {str(returncode)}, cmd output is {cmd_output_text}")
+			self.add_error_text(f"post-cmd: ERROR - NON_ZERO_RETURNCODE: cmd: {self.replication.post_cmd}, output: " + cmd_output_text + "\n\n")
+			return False
+		else:
+			logger.info(f"run_post_cmd: post-cmd: {self.replication.post_cmd} executed successfuly, returncode is {returncode}, cmd output is: {cmd_output_text}")
+			return True
 	
 	
 	# TODO: under testing
@@ -415,12 +447,16 @@ class ReplicationTask(models.Model):
 		self.mark_start()
 		if not self.dry_run:
 			try:
+				if self.replication.pre_cmd is not None:
+					self.run_pre_cmd()
 				logger.debug(f"run_replication: id {self.id} - ready to run cmd: {rsync_cmd}")
 				self.cmd_output_text, self.returncode = run_command_with_returncode(rsync_cmd)
 				logger.debug(f"run_replication: id {self.id} - cmd execution complete. returncode is {self.returncode}")
 				if self.returncode_is_ok:
 					self.OK = True
 					logger.info(f"run_replication: id {self.id} - replication is complete, OK")
+					if self.replication.post_cmd is not None:
+						self.run_post_cmd()
 				else:
 					self.OK = False
 					self.error = True

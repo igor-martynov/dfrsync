@@ -137,12 +137,12 @@ class ReplicationTaskRunner(object, metaclass = MetaSingleton):
 	@classmethod
 	def get_next_task_to_run(cls, task):
 		"""return next task to run if task is not None, else first task to run"""
-		logger.debug(f"get_next_task_to_run: input_task: {task}, tasks: {[str(t.id) + '-' + t.state for t in cls.running_tasks]}")
+		# logger.debug(f"get_next_task_to_run: input_task: {task}, tasks: {[str(t.id) + '-' + t.state for t in cls.running_tasks]}")
 		ind = cls.running_tasks.index(task) if task is not None else 0
 		for task in cls.running_tasks[ind:]:
 			if task.complete or task.running or task.cancelled:
 				continue
-			logger.debug(f"get_next_task_to_run: input_task: {task}, returning {task}")
+			# logger.debug(f"get_next_task_to_run: input_task: {task}, returning {task}")
 			return task
 		return None
 	

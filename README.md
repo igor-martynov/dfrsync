@@ -43,7 +43,7 @@ planned features:
  - [x] show app log
  - [x] task runner - show when started and when finished, how long took
  - [ ] redesign page header
- - [ ] post-replication and pre-replication command execution
+ - [x] post-replication and pre-replication command execution
  - [x] ensure size of command output log is suffucient
  - [ ] check/validate replication src and dest
  - [ ] check/validate replication options
@@ -53,7 +53,7 @@ planned features:
  - [x] add returncode to ReplicationTask model
  - [ ] start_server.sh runs in background
  - [ ] add stop_server.sh to stop perver
- - [ ] create systemd .service file
+ - [x] create systemd .service file
  - [ ] add authorization via login/password
  - [x] add INSTALLATION section to README.md
  - [ ] add favicon.ico file to ./static folder

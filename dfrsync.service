@@ -1,0 +1,15 @@
+# systemctl service file for dfrsync
+# Please edit according to your requirements
+# 
+
+[Unit]
+Description=DFRsync Web App
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/dfrsync
+PIDFile=/var/tmp/dfrsync.pid
+ExecStart=/path/to/dfrsync/start_server.sh
+
+[Install]
+WantedBy=multi-user.target
