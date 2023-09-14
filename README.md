@@ -62,12 +62,12 @@ planned features:
  - [ ] check task simultaneous launching
  - [ ] more test coverage
  - [ ] priority of enabled field: most priority is replication, schedule is least
+ - [ ] fix time widget without seconds
  
 
 
 
 SECURITY:
-
 
 This app works in DEBUG mode of django. Use at own risk.
 Please remember to change SECRET_KEY, ALLOWED_HOSTS and DEBUG in settings.py at least.
@@ -85,6 +85,8 @@ pip packages required:
  - ping3 (used for ICMP remote host probes)
  
 Please make sure all this present on system.
+
+If you want to install on remote server, there is deploy.sh script, which will copy all files to remote server using SCP.
 
 
 

@@ -68,11 +68,22 @@ class ReplicationScheduleModelTests(TestCase):
 			dom = 10)
 		self.assertEqual(test_rs.is_daily, False)
 
+	
+	def test_time_properties(self):
+		import datetime
+		test_r = Replication(src = "/tmp/", dest = "/temp2/")
+		test_rs = ReplicationSchedule(replication = test_r,
+			time = datetime.time(hour = 1,minute = 2, second = 3),
+			hourly = False)
+		
+		assertEqual(test_rs.hour, 1)
+		assertEqual(test_rs.minute, 2)
+		assertEqual(test_rs.second, 3)
+		pass
+
 
 
 class ReplicationTaskModelTest(TestCase):
-	
-	
 	def test_returncode_is_ok(self):
 		test_r = Replication(src = "/tmp/", dest = "/temp2/")
 		test_rt = ReplicationTask(replication = test_r, returncode = 0)
@@ -89,13 +100,15 @@ class ReplicationTaskModelTest(TestCase):
 		test_r = Replication(src = "root@localhost:/tmp/", dest = "/temp2/")
 		test_rt = ReplicationTask(replication = test_r)
 		self.assertEqual(test_rt.check_connection_via_ICMP(), True)
-		pass
 	
 	
 	def test_check_connection_via_ICMP_not_ok(self):
 		test_r = Replication(src = "root@localhost123123:/tmp/", dest = "/temp2/")
 		test_rt = ReplicationTask(replication = test_r)
 		self.assertEqual(test_rt.check_connection_via_ICMP(), False)
+	
+	
+	
 	
 
 

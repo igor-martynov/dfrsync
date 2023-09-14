@@ -269,6 +269,7 @@ class ReplicationTask(models.Model):
 	"""Replication task, will be saved to DB"""
 	replication = models.ForeignKey(Replication, on_delete = models.CASCADE)
 	schedule = models.ForeignKey(ReplicationSchedule, on_delete = models.CASCADE, default = None, blank = True, null = True)
+	date_created = models.DateTimeField("date_created", auto_now_add = True, null = True)
 	start = models.DateTimeField("start", blank = True, null = True)
 	end = models.DateTimeField("end", blank = True, null = True)
 	dry_run = models.BooleanField(default = False)
