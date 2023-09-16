@@ -25,8 +25,11 @@ class IndexView(generic.ListView):
 	
 	def get_context_data(self, **kwargs):
 		import dfrsync
+		import socket
+		
 		context = super().get_context_data(**kwargs)
 		context["app_version"] = dfrsync.__version__
+		context["hostname"] = socket.getfqdn()
 		return context
 
 

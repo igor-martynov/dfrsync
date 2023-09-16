@@ -1,6 +1,8 @@
 {% include "replicator/header.html" %}
-
+<br>
 DFRSync v{{ app_version }}<br>
+on host {{ hostname }}<br>
+<br>
 <br>
 <br>
 All replications:<br><br>
@@ -13,4 +15,5 @@ All replications:<br><br>
 [<a href="{% url 'replicator:scheduler' %}">scheduler</a>] <br>
 <br>
 [<a href="{% url 'replicator:show_log' %}">show log</a>] <br>
-(c) phx<br>
+<br>
+(c) phx.planewalker<br>
