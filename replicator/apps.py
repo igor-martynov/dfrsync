@@ -12,7 +12,7 @@ class ReplicatorConfig(AppConfig):
     def ready(self):
         from .base import ReplicationTaskRunner, ReplicationScheduler
         logger.debug(f"ready: starting app {__name__}")
-        from .signals import signal_reload_shedule_jobs
+        # from .signals import signal_reload_shedule_jobs
         
         ReplicationTaskRunner.launch_startup()
         ReplicationScheduler.launch_startup()

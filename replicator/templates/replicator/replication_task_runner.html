@@ -16,6 +16,7 @@ Recent tasks:<br>
 ({% if replication_task.error %} <span style="color: red;">{{ replication_task.state }}</span> 
 {% elif replication_task.pending %} <span style="color: grey;">{{ replication_task.state }}</span> 
 {% elif replication_task.cancelled %} <span style="color: yellow;">{{ replication_task.state }}</span> 
+{% elif replication_task.running %} <span style="color: lightblue;">{{ replication_task.state }}</span> 
 {% else %} <span style="color: green;">{{ replication_task.state }}</span> {% endif %})<br>
 {% endfor %}
 

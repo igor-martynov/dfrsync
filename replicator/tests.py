@@ -76,10 +76,9 @@ class ReplicationScheduleModelTests(TestCase):
 			time = datetime.time(hour = 1,minute = 2, second = 3),
 			hourly = False)
 		
-		assertEqual(test_rs.hour, 1)
-		assertEqual(test_rs.minute, 2)
-		assertEqual(test_rs.second, 3)
-		pass
+		self.assertEqual(test_rs.hour, 1)
+		self.assertEqual(test_rs.minute, 2)
+		self.assertEqual(test_rs.second, 3)
 
 
 
@@ -108,7 +107,31 @@ class ReplicationTaskModelTest(TestCase):
 		self.assertEqual(test_rt.check_connection_via_ICMP(), False)
 	
 	
-	
+	def test_simple_replication_overall(self):
+		from .base_functions import run_command
+		import random
+		import string
+		import os
+		try:
+			src_test_dir = "/tmp/srctestdir_" + "".join(random.choices(string.ascii_lowercase, k = 8))
+			dest_test_dir = "/tmp/desttestdir_" + "".join(random.choices(string.ascii_lowercase, k = 8))
+			run_command(f"mkdir {src_test_dir}")
+			run_command(f"mkdir {dest_test_dir}")
+			run_command(f"touch " + os.path.join(src_test_dir, "file1"))
+			run_command(f"touch " + os.path.join(src_test_dir, "file2"))
+			run_command(f"touch " + os.path.join(src_test_dir, "file3"))
+		except Exception as e:
+			self.fail(f"ERROR: could not create test dir and files! error is: {e}")
+		test_r = Replication(src = src_test_dir + "/", dest = dest_test_dir + "/")
+		test_rt = ReplicationTask(replication = test_r)
+		test_rt.run()
+		try:
+			run_command(f"rm -rf {src_test_dir}")
+			run_command(f"rm -rf {dest_test_dir}")
+		except Exception as e:
+			self.fail(f"ERROR: could not dele test dirs")
+		self.assertEqual(test_rt.returncode, 0)
+
 	
 
 

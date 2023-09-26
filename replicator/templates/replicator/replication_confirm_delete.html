@@ -1,0 +1,11 @@
+{% include "replicator/header.html" %}
+
+<form method="post">
+	{% csrf_token %}
+	Delete  Replication?
+	<!-- <table> -->
+		{{ form }}
+	<!-- </table> -->
+	<br>
+	<input type="submit" name="delete" value="delete">
+</form>

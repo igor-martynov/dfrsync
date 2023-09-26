@@ -266,7 +266,7 @@ class ReplicationSchedule(models.Model):
 
 
 class ReplicationTask(models.Model):
-	"""Replication task, will be saved to DB"""
+	"""Replication task, responsible for all actual data about one replication run, all data will be saved to DB"""
 	replication = models.ForeignKey(Replication, on_delete = models.CASCADE)
 	schedule = models.ForeignKey(ReplicationSchedule, on_delete = models.CASCADE, default = None, blank = True, null = True)
 	date_created = models.DateTimeField("date_created", auto_now_add = True, null = True)

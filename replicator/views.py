@@ -57,19 +57,15 @@ class ReplicationAddView(generic.edit.CreateView):
 
 
 
-# TODO: rewrite this as class-based View
-def delete_replication(request, replication_id):
-	replication = get_object_or_404(Replication, pk = replication_id)
-	context = {"replication": replication}
-	if request.method == "POST":
-		replication.delete()
-		logger.debug(f"delete_replication: replication {replication} deleted")
-		context = {"message": f"object deleted: {replication}"}
-		return render(request, "replicator/blank_page.html", context = context)
-	context["message"] = f"really delete replication {replication}?"
-	return render(request, "replicator/blank_page_with_button.html", context = context)
+class ReplicationDeleteView(generic.edit.DeleteView):
+	model = Replication
+	
+	
+	def get_success_url(self):
+		return reverse("replicator:index")
 
 
+		
 def replication_task_runner(request):
 	all_replications = Replication.objects.filter(enabled = True)
 	context = {"all_replications": all_replications, "running_tasks": ReplicationTaskRunner.running_tasks}
