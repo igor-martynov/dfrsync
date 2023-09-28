@@ -15,6 +15,35 @@ from .base_functions import run_command, run_command_with_returncode
 
 
 
+class Settings(models.Model):
+	global_dry_run = models.BooleanField(default = False)
+	rsync_executable = models.CharField(max_length = 512, default = "rsync")
+	
+	
+	@staticmethod
+	def get_settings():
+		q = Settings.objects.filter(pk = 1)
+		logger.debug(f"get_settings_obj: object with pk == 1: {q}")
+		if not q.exists():
+			new_settings = Settings.objects.create()
+			new_settings.save()
+			logger.debug(f"get_settings_obj: created new settings object {new_settings.pk}")
+			logger.debug(f"get_settings_obj: all objects {Settings.objects.all()}")
+		return Settings.objects.get(pk = 1)
+
+	
+	@staticmethod
+	def reset_settings():
+		all_settings = Settings.objects.all()
+		logger.debug(f"reset_settings: all objects: {all_settings}")
+		for obj in all_settings:
+			obj.delete()
+		logger.debug(f"reset_settings: all existing settings deleted")
+		new_settings = get_settings()
+		logger.info(f"reset_settings: settings resetted to defaults")
+		
+
+
 class Replication(models.Model):
 	""""""
 	name = models.CharField(max_length = 128, unique = True)
@@ -29,7 +58,8 @@ class Replication(models.Model):
 	pre_cmd = models.CharField(max_length = 512, default = None, blank = True, null = True)
 	post_cmd = models.CharField(max_length = 512, default = None, blank = True, null = True)
 	check_ping = models.BooleanField(default = True)
-	RSYNC_BIN = "rsync"
+	RSYNC_BIN = Settings.get_settings().rsync_executable
+	# RSYNC_BIN = "rsync"
 
 
 	def __str__(self):
@@ -345,7 +375,6 @@ class ReplicationTask(models.Model):
 			return True
 	
 	
-	# TODO: under testing
 	def check_connection_via_ICMP(self):
 		"""check connection via ICMP.
 		returns True if reachable, False if unreachable, None if there is no remote_host to connect (both src and dest are local
@@ -523,7 +552,6 @@ class ReplicationTask(models.Model):
 	def run(self):
 		logger.debug("run: starting replication")
 		self.mark_start()
-		
 		if self.replication.check_ping:
 			logger.debug(f"run: will check ping - check_ping set to True")
 			reachable = self.check_connection_via_ICMP()
@@ -542,8 +570,6 @@ class ReplicationTask(models.Model):
 			logger.debug(f"run: will not check ping")
 			self.run_replication()
 		self.mark_end()
-
-
 
 
 

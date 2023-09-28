@@ -6,9 +6,9 @@ from django.urls import reverse
 import logging
 
 
-from .models import Replication, ReplicationSchedule, ReplicationTask
+from .models import Replication, ReplicationSchedule, ReplicationTask, Settings
 from .base import ReplicationTaskRunner
-from .forms import ReplicationForm, ReplicationScheduleForm
+from .forms import ReplicationForm, ReplicationScheduleForm, SettingsForm
 
 
 logger = logging.getLogger(__name__)
@@ -173,8 +173,14 @@ def show_log(request):
 		content_list = lf.readlines()
 	context["message"] = f"LOG <br><br> {'<br>'.join(content_list)}"
 	return render(request, "replicator/blank_page.html", context = context)
-		
 
 
 
-
+class SettingsEditView(generic.edit.UpdateView):
+	model = Settings
+	form_class = SettingsForm
+	template_name = "replicator/settings_edit.html"
+	
+	
+	def get_success_url(self):
+		return reverse("replicator:edit_settings", args = (self.object.id,))

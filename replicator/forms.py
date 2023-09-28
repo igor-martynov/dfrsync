@@ -1,7 +1,7 @@
 
 from django import forms
 
-from .models import Replication, ReplicationSchedule
+from .models import Replication, ReplicationSchedule, Settings
 
 
 class ReplicationForm(forms.ModelForm):
@@ -21,4 +21,14 @@ class ReplicationScheduleForm(forms.ModelForm):
 		model = ReplicationSchedule
 		fields = "__all__"
 		widgets = {"time": forms.TimeInput(attrs = {"type": "time"}, format = '%H:%M:%S')}
+
+
+
+class SettingsForm(forms.ModelForm):
+	class Meta:
+		model = Settings
+		fields = "__all__"
+
+
+
 

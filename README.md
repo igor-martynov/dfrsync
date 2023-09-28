@@ -4,8 +4,11 @@ Web App for rsync file replication, scheduled or on-demand.
 
 
 
-
-
+Supported features:
+ - run local-to-tocal, local-to-remote and remote-to-local replications
+ - run pre-replication and post-replication commands. They should be one executable or bash script.
+ - save task result - store rsync command output in DB
+ - uses SQLite3 DB
 
 
 

@@ -1,0 +1,15 @@
+{% include "replicator/header.html" %}
+
+<h1>Settings</h1>
+
+<form action="{{ form_action_url }}" method="post">
+	{% csrf_token %}
+	<table>
+		{{ form.as_table }}
+	</table>
+	<br>
+	Please restart the app manually after settings changed!<br>
+	<br>
+	<input type="submit" name="save" value="save">
+</form>
+

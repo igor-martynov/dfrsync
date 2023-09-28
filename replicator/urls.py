@@ -25,5 +25,6 @@ urlpatterns = [
 	path("scheduler/disable_schedule/<int:schedule_id>", views.disable_replication_schedule, name = "disable_schedule"),
 	path("scheduler/delete_schedule/<int:pk>", views.ReplicationScheduleDeleteView.as_view(), name = "delete_schedule"),
 	path("show_log", views.show_log, name = "show_log"),
+	path("edit_settings/<int:pk>", views.SettingsEditView.as_view(), name = "edit_settings"),
 ]
 
