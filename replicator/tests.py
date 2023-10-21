@@ -1,8 +1,6 @@
 from django.test import TestCase
 from .models import Replication, ReplicationTask, ReplicationSchedule
 
-# Create your tests here.
-
 
 
 class ReplicationModelTests(TestCase):

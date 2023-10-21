@@ -66,6 +66,7 @@ planned features:
  - [ ] more test coverage
  - [ ] priority of enabled field: most priority is replication, schedule is least
  - [ ] fix time widget without seconds
+ - [ ] fix DeleteViews
  
 
 

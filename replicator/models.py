@@ -23,12 +23,12 @@ class Settings(models.Model):
 	@staticmethod
 	def get_settings():
 		q = Settings.objects.filter(pk = 1)
-		logger.debug(f"get_settings_obj: object with pk == 1: {q}")
+		logger.debug(f"get_settings: object with pk == 1: {q}")
 		if not q.exists():
 			new_settings = Settings.objects.create()
 			new_settings.save()
-			logger.debug(f"get_settings_obj: created new settings object {new_settings.pk}")
-			logger.debug(f"get_settings_obj: all objects {Settings.objects.all()}")
+			logger.debug(f"get_settings: created new settings object {new_settings.pk}")
+			logger.debug(f"get_settings: all objects {Settings.objects.all()}")
 		return Settings.objects.get(pk = 1)
 
 	
@@ -40,7 +40,7 @@ class Settings(models.Model):
 			obj.delete()
 		logger.debug(f"reset_settings: all existing settings deleted")
 		new_settings = get_settings()
-		logger.info(f"reset_settings: settings resetted to defaults")
+		logger.info(f"reset_settings: new settings created from defaults")
 		
 
 
@@ -59,7 +59,6 @@ class Replication(models.Model):
 	post_cmd = models.CharField(max_length = 512, default = None, blank = True, null = True)
 	check_ping = models.BooleanField(default = True)
 	RSYNC_BIN = Settings.get_settings().rsync_executable
-	# RSYNC_BIN = "rsync"
 
 
 	def __str__(self):
