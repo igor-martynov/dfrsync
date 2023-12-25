@@ -46,6 +46,8 @@ class Settings(models.Model):
 
 class Replication(models.Model):
 	""""""
+	# class Meta:
+	# 	ordering = ("-pk",)
 	name = models.CharField(max_length = 128, unique = True)
 	src = models.CharField(max_length = 512, default = None)
 	dest = models.CharField(max_length = 512, default = None)
@@ -115,7 +117,8 @@ class ReplicationSchedule(models.Model):
 	every N days at HH:MM:SS
 	at YYYY-MM-DD HH:MM:SS (one time in future)
 	"""
-	
+	class Meta:
+		ordering = ("pk",)
 	name = models.CharField(max_length = 128, unique = True, blank = True, null = True)
 	replication = models.ForeignKey(Replication, on_delete = models.CASCADE)
 	time = models.TimeField(default = None, blank = True, null = True)#, widget = forms.TimeInput(attrs = {"type": "time"}, format = "%H:%M:%S"))
@@ -296,6 +299,8 @@ class ReplicationSchedule(models.Model):
 
 class ReplicationTask(models.Model):
 	"""Replication task, responsible for all actual data about one replication run, all data will be saved to DB"""
+	class Meta:
+		ordering = ("-date_created", "-start", )
 	replication = models.ForeignKey(Replication, on_delete = models.CASCADE)
 	schedule = models.ForeignKey(ReplicationSchedule, on_delete = models.CASCADE, default = None, blank = True, null = True)
 	date_created = models.DateTimeField("date_created", auto_now_add = True, null = True)

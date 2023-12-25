@@ -57,7 +57,7 @@ planned features:
  - [ ] start_server.sh runs in background
  - [ ] add stop_server.sh to stop perver
  - [x] create systemd .service file
- - [ ] add authorization via login/password
+ - [ ] add simple authorization via login/password
  - [x] add INSTALLATION section to README.md
  - [ ] add favicon.ico file to ./static folder
  - [ ] rsync binary autodetect
@@ -67,7 +67,10 @@ planned features:
  - [ ] priority of enabled field: most priority is replication, schedule is least
  - [ ] fix time widget without seconds
  - [ ] fix DeleteViews
- 
+ - [ ] show disks and df -hT
+ - [ ] list views as html table
+ - [ ] create FreeBSD service file
+ - [ ] total data count on src or dest
 
 
 
